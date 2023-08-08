@@ -1,0 +1,6 @@
+548 training , 152 validation, 78 testing
+
+100 epochs, lr .01 , starting with default ultralytics weights
+
+Augmentations :
+ none

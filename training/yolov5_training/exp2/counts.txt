@@ -1,0 +1,5 @@
+foam_other         15
+plastic_bottle      5
+plastic_cap         3
+plastic_other       2
+plastic_wrapper     1

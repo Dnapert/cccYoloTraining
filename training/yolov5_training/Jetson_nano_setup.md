@@ -1,5 +1,5 @@
 # Jetson Nano Setup
- Setup proceedure to get the Nano running with YoloV5 and DeepStream SDK Object Detection and Tracking
+ Setup proceedure to get the Nano running with YoloV5, Anaconda, and PyTorch
 ## Required Hardware
  * Jetson Nano BO1 Developer Kit
  * mini SD card (64gb or larger, ultra high speed or video speed class)

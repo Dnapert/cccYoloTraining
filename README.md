@@ -1,4 +1,4 @@
-# Collection of all our training data and Data augmnetation code
+# Collection of all our training data and Data augmentation code
 
 ```
 conda create -n <env_name> python=3.8
@@ -10,7 +10,7 @@ pip install -r requirements.txt
 ## Data Augmentation Scripts
 ### resize.py:
    - Resizes all images in a directory to a specified size
-   - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image utput directory> --width <width> --height <height>`
+   - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image output directory> --width <width> --height <height>`
 
 ### coco2yolo.py
 
@@ -20,4 +20,4 @@ pip install -r requirements.txt
   
 ### remove_classes.py
 - Removes all instances of specified classes from a COCO annotation file
-- Usage:`python remove_classes.py --annotations_path <path_to_annotations> --output_file <path_to_output_annotations use .json name> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
+- Usage:`python remove_classes.py --annotations_path <path_to_annotations> --output_file <path_to_output_annotations use .json> --classes <list of classes to remove sperated by space 1 2 3 etc. >`

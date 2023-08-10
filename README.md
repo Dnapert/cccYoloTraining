@@ -21,3 +21,7 @@ pip install -r requirements.txt
 ### remove_classes.py
 - Removes all instances of specified classes from a COCO annotation file
 - Usage:`python remove_classes.py --annotations_path <path_to_annotations> --output_file <path_to_output_annotations.json> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
+
+### augment_classes.py
+- Augments images of category IDs 0, 3, 6, 8 and adds annotations to those new augmented images
+- Usage:`python augment_classes.py <path_to_annotations> <path_to_original_images> <path_to_new_augmented_images>`

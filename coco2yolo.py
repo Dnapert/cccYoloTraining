@@ -138,8 +138,8 @@ def min_index(arr1, arr2):
 
 parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5 format.')
 parser.add_argument('--json_dir', type=str, default='training/yolov5_training/exp2', help='directory path to COCO JSON files')
-parser.add_argument('--use_segments', action='store_true',default= False, help='use segmentations instead of bounding boxes')
-parser.add_argument('--cls91to80', action='store_true',default=False, help='convert 91-class COCO to 80-class')
+parser.add_argument('--use_segments', type=bool,default= False, help='use segmentations instead of bounding boxes')
+parser.add_argument('--cls91to80', type=bool,default=False, help='convert 91-class COCO to 80-class')
 parser.add_argument('--fixed_size',type=bool,default=False, help='use fixed size for image width and height')
 parser.add_argument('--width', type=int, default=640, help='fixed image width')
 parser.add_argument('--height', type=int, default=480, help='fixed image height')
@@ -148,4 +148,4 @@ args = parser.parse_args()
 convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80, fixed_size=args.fixed_size, width=args.width, height=args.height)
 
 #json dir is the directory where the json file is located
-#'training/yolov5_training/exp<n>' is the directory where the json file is located in here
+#'training/yolov5_training/exp<n>' is the directory where the json files are located here

@@ -14,5 +14,5 @@ pip install -r requirements.txt
 ### coco2yolo.py
 
  - Converts COCO annotations to YOLO format
-- Usage: `python coco2yolo.py --json_dir <path_to_directory_with_json> --use_segments <True/False> ---cls91too80 <True/False> --fixed_size <True/False> --width <width> --height <height>`
+- Usage: `python coco2yolo.py --json_dir <path_to_directory_with_json> --use_segments <True/False optional> ---cls91to80 <True/False optional> --fixed_size <True/False> --width <width> --height <height>`
  -  The fixed_size arg is to be used if you want the annotations converted to a fixed image size. If you want the annotations to be converted to the original image size, set fixed_size to False, or don't use the arg at all. It defaults to false. If set to true, specify the --width and --height args.

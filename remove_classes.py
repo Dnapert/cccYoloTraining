@@ -1,6 +1,8 @@
 import json
+import argparse
 
-baltimore_ai_class_dict={ 0:"plastic_bag",
+baltimore_ai_class_dict={ 
+            0:"plastic_bag",
             1:"plastic_bottle",
             2:"plastic_cap",
             3:'plastic_container',
@@ -17,13 +19,13 @@ baltimore_ai_class_dict={ 0:"plastic_bag",
             14:"misc"
             }
 
-def remove_classes_from_annotations(annotations_path, classes_to_remove, output_path,class_dict)->None:
+def remove_classes_from_annotations(annotations_path, classes_to_remove, output_file,class_dict)->None:
     
     """
     Remove classes from annotations file
     :param annotations_path: Path to annotations file
     :param classes_to_remove: List of classes to remove
-    :param output_path: Path to output file
+    :param output_file: Path to output file
     :return: None
     """
 
@@ -37,12 +39,18 @@ def remove_classes_from_annotations(annotations_path, classes_to_remove, output_
     annotations['categories'] = [c for c in annotations['categories'] if c['id'] not in classes_to_remove]
 
 
-    with open(output_path, 'w') as f:
+    with open(output_file, 'w') as f:
         json.dump(annotations, f)
         
-classes_to_remove = [9,10,11,12,13,14]   
-annotations_path = "annotation_coco_format.json"
-output_path = "annotation_coco_format_3.json"
+parser = argparse.ArgumentParser(description='Remove classes from annotations file')
+parser.add_argument('--annotations_path', type=str, help='Path to annotations file')
+parser.add_argument('--classes_to_remove', nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
+parser.add_argument('--output_file', type=str, help='Path to output file')
+args = parser.parse_args()
+
+classes_to_remove = args.classes_to_remove   
+annotations_path = args.annotations_path
+output_file = args.output_file
 class_dict = baltimore_ai_class_dict
 
-remove_classes_from_annotations(annotations_path, classes_to_remove, output_path,class_dict)
+remove_classes_from_annotations(annotations_path, classes_to_remove, output_file,class_dict)

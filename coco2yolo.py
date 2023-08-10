@@ -2,18 +2,18 @@
 import json
 import numpy as np
 from collections import defaultdict
-
+import argparse
 from utils import *
 
-def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool):
+def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_size=bool,height=int,width=int):
     
-    save_dir = make_dirs('converted')  # output directory
+    save_dir = os.path.join(json_dir,'converted')  # output directory
     coco80 = coco91_to_coco80_class()
 
     # Import json
     for json_file in sorted(Path(json_dir).resolve().glob('*.json')):
-        fn = Path(save_dir) / 'labels' / json_file.stem.replace('instances_', '')  # folder name
-        fn.mkdir()
+        fn = Path(save_dir) / 'labels'   # folder name
+        fn.mkdir(exist_ok=True, parents=True)  # make folder
         with open(json_file) as f:
             data = json.load(f)
             #print('Number of images:', len(data['images']))
@@ -35,6 +35,9 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool):
             #img = images['%g' % img_id] also causing error with line 23
             img = images[img_id]
             h, w, f = img['height'], img['width'], img['file_name']
+            if fixed_size:
+                h = height
+                w = width
 
             bboxes = []
             segments = []
@@ -133,8 +136,16 @@ def min_index(arr1, arr2):
     dis = ((arr1[:, None, :] - arr2[None, :, :]) ** 2).sum(-1)
     return np.unravel_index(np.argmin(dis, axis=None), dis.shape)
 
+parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5 format.')
+parser.add_argument('--json_dir', type=str, default='training/yolov5_training/exp2', help='directory path to COCO JSON files')
+parser.add_argument('--use_segments', action='store_true',default= False, help='use segmentations instead of bounding boxes')
+parser.add_argument('--cls91to80', action='store_true',default=False, help='convert 91-class COCO to 80-class')
+parser.add_argument('--fixed_size',type=bool,default=False, help='use fixed size for image width and height')
+parser.add_argument('--width', type=int, default=640, help='fixed image width')
+parser.add_argument('--height', type=int, default=480, help='fixed image height')
+args = parser.parse_args()
 
-
-convert_coco_json(json_dir='training/yolov5_training/exp2', use_segments=False, cls91to80=False)
+convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80, fixed_size=args.fixed_size, width=args.width, height=args.height)
 
 #json dir is the directory where the json file is located
+#'training/yolov5_training/exp<n>' is the directory where the json file is located in here

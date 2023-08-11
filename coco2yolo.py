@@ -32,7 +32,7 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_siz
 
         # Write labels file
         for img_id, anns in tqdm(imgToAnns.items(), desc=f'Annotations {json_file}'):
-            #img = images['%g' % img_id] also causing error, we dont need to convert to string
+            #img = images['%g' % img_id] also causing error
             img = images[img_id]
             h, w, f = img['height'], img['width'], img['file_name']
             if fixed_size:

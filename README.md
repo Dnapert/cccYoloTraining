@@ -25,3 +25,10 @@ pip install -r requirements.txt
 ### augment_classes.py
 - Augments images of category IDs 0, 3, 6, 8 and adds annotations to those new augmented images
 - Usage:`python augment_classes.py <path_to_annotations> <path_to_original_images> <path_to_new_augmented_images>`
+
+### split_data.py
+- Splits a dataset into train, val and test sets
+- outputs a file ready fot YOLO training under datasets directory in specified output directory
+- Also outputs bar graphs of class distribution in each set
+- Usage: `python split_data.py --file_dir <path_to_yolo_labels_file> --output_dir <path_to_output_dir> --images <path_to_images> --image_type <jpg/png>`
+- Check the script for defaults

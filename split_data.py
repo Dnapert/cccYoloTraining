@@ -71,5 +71,7 @@ parser.add_argument('--images', type=str, default='resized_images', help='direct
 parser.add_argument('--image_type', type=str, default='JPG', help='type of image')
 args = parser.parse_args()
 
-split_data(args.file_dir, args.output_dir, args.images, args.image_type)
+if __name__ == '__main__':
+
+    split_data(args.file_dir, args.output_dir, args.images, args.image_type)
 

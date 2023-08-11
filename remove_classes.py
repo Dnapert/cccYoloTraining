@@ -19,7 +19,7 @@ baltimore_ai_class_dict={
             14:"misc"
             }
 
-def remove_classes_from_annotations(annotations_path, classes_to_remove, output_file,class_dict)->None:
+def remove_classes_from_annotations(annotations_path, classes_to_remove, output_file,class_dict = baltimore_ai_class_dict)->None:
     
     """
     Remove classes from annotations file
@@ -45,12 +45,11 @@ def remove_classes_from_annotations(annotations_path, classes_to_remove, output_
 parser = argparse.ArgumentParser(description='Remove classes from annotations file')
 parser.add_argument('--annotations_path', type=str, help='Path to annotations file')
 parser.add_argument('--classes_to_remove', nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
-parser.add_argument('--output_file', type=str, help='Path to output file')
+parser.add_argument('--output_file',default='coco_classes_removed.json', type=str, help='Path to output file')
 args = parser.parse_args()
 
-classes_to_remove = args.classes_to_remove   
-annotations_path = args.annotations_path
-output_file = args.output_file
+
 class_dict = baltimore_ai_class_dict
 
-remove_classes_from_annotations(annotations_path, classes_to_remove, output_file,class_dict)
+if __name__ == '__main__':
+    remove_classes_from_annotations(args.annotations_path, args.classes_to_remove, args.output_file,class_dict)

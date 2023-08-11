@@ -31,9 +31,6 @@ parser.add_argument('--width', type=int, default=640, help='width of the resized
 parser.add_argument('--height', type=int, default=480, help='height of the resized images')
 args = parser.parse_args()
 
-image_dir = args.image_dir
-output_dir = args.output_dir
-width = args.width
-height = args.height
-
-resize_images(image_dir, width, height,output_dir)
+if __name__ == '__main__':
+   
+    resize_images(args.image_dir, args.width, args.height,args.output_dir)

@@ -11,14 +11,14 @@ def convert_coco_json(json_dir=str, annotation_file=str,use_segments=False, cls9
     coco80 = coco91_to_coco80_class()
 
     # Import json
-    for json_file in sorted(Path(json_dir).resolve().glob('*.json')):
+    with open(annotation_file) as f:
         fn = Path(save_dir) / 'labels'   # folder name
         fn.mkdir(exist_ok=True, parents=True)  # make folder
-        with open(annotation_file) as f:
-            data = json.load(f)
+       
+        data = json.load(f)
             #print('Number of images:', len(data['images']))
             #print('Number of annotations:', len(data['annotations']))
-            print(f'Converting {json_file}...')
+        print(f'Converting {annotation_file}...')
 
         # Create image dict
         #images = {'%g' % x['id']: x for x in data['images']}  this line was causing error, we dont need to convert to string
@@ -31,7 +31,7 @@ def convert_coco_json(json_dir=str, annotation_file=str,use_segments=False, cls9
        
 
         # Write labels file
-        for img_id, anns in tqdm(imgToAnns.items(), desc=f'Annotations {json_file}'):
+        for img_id, anns in tqdm(imgToAnns.items(), desc=f'Annotations {annotation_file}'):
             #img = images['%g' % img_id] also causing error
             img = images[img_id]
             h, w, f = img['height'], img['width'], img['file_name']

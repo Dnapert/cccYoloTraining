@@ -8,6 +8,16 @@ pip install -r requirements.txt
 ```
 
 ## Data Augmentation Scripts
+
+### main.py
+- Removes all instances of specified classes from a COCO annotation file
+- Converts COCO annotations to YOLO format
+- Augments images of given category ID's
+- Splits a dataset into train, val and test sets
+- Ouputs files ready for YOLO training under datasets directory in specified output directory
+- Also outputs bar graphs of class distribution in each set
+- Usage: Place images in data directory under images folder and annotations in data directory
+- `python main.py --remove <list of class ID's to remove seperated by spaces ex 1 2 3 --augment <list of class ID's to augment seperated by spaces ex 1 2 3> `
 ### resize.py:
    - Resizes all images in a directory to a specified size
    - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image output directory> --width <width> --height <height>`

@@ -52,7 +52,7 @@ def convert_coco_json(json_dir=str, annotation_file=str,use_segments=False, cls9
                 if box[2] <= 0 or box[3] <= 0:  # if w <= 0 and h <= 0
                     continue
 
-                cls = coco80[ann['category_id'] - 1] if cls91to80 else ann['category_id'] - 1  # class
+                cls = coco80[ann['category_id']] if cls91to80 else ann['category_id']   # class
                 box = [cls] + box.tolist()
                 if box not in bboxes:
                     bboxes.append(box)

@@ -16,7 +16,7 @@ def resize_images(image_dir, width, height,output_dir):
             sys.stdout.write(f'\r {i}/{len(images)}')
             i += 1
             image = cv2.imread(os.path.join(image_dir,filename))
-            image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
+            image = cv2.resize(image, (int(width),int(height)), interpolation=cv2.INTER_AREA)
             cv2.imwrite(os.path.join(output_dir,filename), image)
         print('\nDone!')
             

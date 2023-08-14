@@ -5,7 +5,7 @@ from collections import defaultdict
 import argparse
 from utils import *
 
-def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_size=bool,height=int,width=int):
+def convert_coco_json(json_dir=str, annotation_file=str,use_segments=False, cls91to80=False, fixed_size=bool,height=int,width=int):
     
     save_dir = os.path.join(json_dir,'converted')  # output directory
     coco80 = coco91_to_coco80_class()
@@ -14,7 +14,7 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_siz
     for json_file in sorted(Path(json_dir).resolve().glob('*.json')):
         fn = Path(save_dir) / 'labels'   # folder name
         fn.mkdir(exist_ok=True, parents=True)  # make folder
-        with open(json_file) as f:
+        with open(annotation_file) as f:
             data = json.load(f)
             #print('Number of images:', len(data['images']))
             #print('Number of annotations:', len(data['annotations']))
@@ -143,9 +143,12 @@ parser.add_argument('--cls91to80', type=bool,default=False, help='convert 91-cla
 parser.add_argument('--fixed_size',type=bool,default=False, help='use fixed size for image width and height')
 parser.add_argument('--width', type=int, default=640, help='fixed image width')
 parser.add_argument('--height', type=int, default=480, help='fixed image height')
-args = parser.parse_args()
+parser.add_argument('--annotation_file', type=str, default='coco_annotation_format.json', help='annotation file name')
 
-convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80, fixed_size=args.fixed_size, width=args.width, height=args.height)
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80, fixed_size=args.fixed_size, width=args.width, height=args.height)
 
 #json dir is the directory where the json file is located
 #'training/yolov5_training/exp<n>' is the directory where the json files are located here

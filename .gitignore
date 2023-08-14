@@ -163,3 +163,6 @@ converted/
 images/
 resized_images/
 datasets/
+*.JPG
+*.jpg
+split_data/

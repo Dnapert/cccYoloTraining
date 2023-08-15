@@ -166,3 +166,4 @@ datasets/
 *.JPG
 *.jpg
 split_data/
+data/modified

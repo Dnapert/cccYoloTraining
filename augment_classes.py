@@ -48,7 +48,7 @@ def generate_augmented_images(json_file, augment_ids, image_folder, output_folde
 
     for annotation in annotations:
         if annotation["category_id"] in augment_ids:
-            new_annotation = copy.copy(annotation);
+            new_annotation = copy.copy(annotation)
             file_name = new_annotation["file_name"]
             image_path = os.path.join(image_folder, file_name)
             image = cv2.imread(image_path)

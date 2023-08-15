@@ -69,7 +69,9 @@ parser.add_argument('--file_dir', type=str, default='training/yolov5_training/ex
 parser.add_argument('--output_dir', type=str, default='training/yolov5_training/exp2/datasets', help='directory of the output files')
 parser.add_argument('--images', type=str, default='resized_images', help='directory of the images')
 parser.add_argument('--image_type', type=str, default='JPG', help='type of image')
-args = parser.parse_args()
 
-split_data(args.file_dir, args.output_dir, args.images, args.image_type)
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    split_data(args.file_dir, args.output_dir, args.images, args.image_type)
 

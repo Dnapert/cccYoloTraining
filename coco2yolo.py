@@ -5,20 +5,20 @@ from collections import defaultdict
 import argparse
 from utils import *
 
-def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_size=bool,height=int,width=int):
+def convert_coco_json(json_dir=str, annotation_file=str,use_segments=False, cls91to80=False):
     
     save_dir = os.path.join(json_dir,'converted')  # output directory
     coco80 = coco91_to_coco80_class()
 
     # Import json
-    for json_file in sorted(Path(json_dir).resolve().glob('*.json')):
+    with open(annotation_file) as f:
         fn = Path(save_dir) / 'labels'   # folder name
         fn.mkdir(exist_ok=True, parents=True)  # make folder
-        with open(json_file) as f:
-            data = json.load(f)
+       
+        data = json.load(f)
             #print('Number of images:', len(data['images']))
             #print('Number of annotations:', len(data['annotations']))
-            print(f'Converting {json_file}...')
+        print(f'Converting {annotation_file}...')
 
         # Create image dict
         #images = {'%g' % x['id']: x for x in data['images']}  this line was causing error, we dont need to convert to string
@@ -31,13 +31,13 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_siz
        
 
         # Write labels file
-        for img_id, anns in tqdm(imgToAnns.items(), desc=f'Annotations {json_file}'):
+        for img_id, anns in tqdm(imgToAnns.items(), desc=f'Annotations {annotation_file}'):
             #img = images['%g' % img_id] also causing error
             img = images[img_id]
             h, w, f = img['height'], img['width'], img['file_name']
-            if fixed_size:
-                h = height
-                w = width
+            # if fixed_size:
+            #     h = int(height)
+            #     w = int(width)
 
             bboxes = []
             segments = []
@@ -52,7 +52,7 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_siz
                 if box[2] <= 0 or box[3] <= 0:  # if w <= 0 and h <= 0
                     continue
 
-                cls = coco80[ann['category_id'] - 1] if cls91to80 else ann['category_id'] - 1  # class
+                cls = coco80[ann['category_id']] if cls91to80 else ann['category_id']   # class
                 box = [cls] + box.tolist()
                 if box not in bboxes:
                     bboxes.append(box)
@@ -70,7 +70,7 @@ def convert_coco_json(json_dir=str, use_segments=bool, cls91to80=bool, fixed_siz
 
             # Write
             with open((fn / f).with_suffix('.txt'), 'a') as file:
-                print(f, w, h, file=file)  # filename width height
+                #print(f, w, h, file=file)  # filename width height # no need to write this, messes up the training parser
                 for i in range(len(bboxes)):
                     line = *(segments[i] if use_segments else bboxes[i]),  # cls, box or segments
                     file.write(('%g ' * len(line)).rstrip() % line + '\n')
@@ -140,12 +140,12 @@ parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5
 parser.add_argument('--json_dir', type=str, default='training/yolov5_training/exp2', help='directory path to COCO JSON files')
 parser.add_argument('--use_segments', type=bool,default= False, help='use segmentations instead of bounding boxes')
 parser.add_argument('--cls91to80', type=bool,default=False, help='convert 91-class COCO to 80-class')
-parser.add_argument('--fixed_size',type=bool,default=False, help='use fixed size for image width and height')
-parser.add_argument('--width', type=int, default=640, help='fixed image width')
-parser.add_argument('--height', type=int, default=480, help='fixed image height')
-args = parser.parse_args()
+parser.add_argument('--annotation_file', type=str, default='coco_annotation_format.json', help='annotation file name')
 
-convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80, fixed_size=args.fixed_size, width=args.width, height=args.height)
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    convert_coco_json(json_dir=args.json_dir, use_segments=args.use_segments, cls91to80=args.cls91to80)
 
 #json dir is the directory where the json file is located
 #'training/yolov5_training/exp<n>' is the directory where the json files are located here

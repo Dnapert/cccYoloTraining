@@ -6,15 +6,21 @@ from augment_classes import generate_augmented_images
 import argparse
 
 def export_training_dataset(images, width, height,annotations, remove, augment,image_type):
+    removed = len(remove) > 0
+    if removed:
+        json_file = annotations
+    else:
+        json_file = 'data/modified/modified_annotations.json'
+    
     # resize the images
     resize_images(images,width,height, 'data/resized_images')
-
+    
     # # remove the classes that are not in the classes list
-    if remove:
+    if removed:
         remove_classes_from_annotations(annotations,remove,output_file='data/modified/modified_annotations.json')
 
     # # augment the classes
-    generate_augmented_images('data/modified/modified_annotations.json',augment,'data/resized_images','data/resized_images')
+    generate_augmented_images(json_file,augment,'data/resized_images','data/resized_images')
 
     # convert the coco annotations to yolo format
     convert_coco_json('data/modified',annotation_file='data/modified/modified_annotations_updated.json')
@@ -27,8 +33,8 @@ def export_training_dataset(images, width, height,annotations, remove, augment,i
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--remove', help='list of classes to remove, integers seperated by spaces', nargs='+',type=int,required=True)
-parser.add_argument('--augment', help='list of classes to augment, integers seperated by spaces', nargs='+',type=int,required=True)
+parser.add_argument('--remove', help='list of classes to remove, integers seperated by spaces', nargs='+',type=int)
+parser.add_argument('--augment', help='list of classes to augment, integers seperated by spaces', nargs='+',type=int)
 parser.add_argument('--images',default='data/images', help='path to the image directory')
 parser.add_argument('--width', default=640, help='width of the resized image')
 parser.add_argument('--height', default=480, help='height of the resized image')

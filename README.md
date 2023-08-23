@@ -19,8 +19,8 @@ pip install -r requirements.txt
 - Usage: Place images in data directory under images folder and annotations in data directory
 - `python export_training_dataset.py --remove <list of class ID's to remove seperated by spaces ex 1 2 3 --augment <list of class ID's to augment seperated by spaces ex 1 2 3> `
 ### resize.py:
-   - Resizes all images in a directory to a specified size
-   - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image output directory> --width <width> --height <height>`
+   - Resizes all images in a directory to a specified width and maintains aspect ratio
+   - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image output directory> --target_width <width> `
 
 ### coco2yolo.py
 

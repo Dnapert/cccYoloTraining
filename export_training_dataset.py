@@ -6,21 +6,17 @@ from augment_classes import generate_augmented_images
 import argparse
 
 def export_training_dataset(images, width, height,annotations, remove, augment,image_type):
-    removed = len(remove) > 0
-    if removed:
-        json_file = annotations
-    else:
-        json_file = 'data/modified/modified_annotations.json'
+   
     
     # resize the images
-    resize_images(images,width,height, 'data/resized_images')
+    resize_images(images,width, 'data/resized_images')
     
     # # remove the classes that are not in the classes list
-    if removed:
-        remove_classes_from_annotations(annotations,remove,output_file='data/modified/modified_annotations.json')
+
+    remove_classes_from_annotations(annotations,remove,output_file='data/modified/modified_annotations.json')
 
     # # augment the classes
-    generate_augmented_images(json_file,augment,'data/resized_images','data/resized_images')
+    generate_augmented_images('data/modified/modified_annotations_updated.json',augment,'data/resized_images','data/resized_images')
 
     # convert the coco annotations to yolo format
     convert_coco_json('data/modified',annotation_file='data/modified/modified_annotations_updated.json')

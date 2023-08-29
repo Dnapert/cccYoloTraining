@@ -16,7 +16,7 @@ def export_training_dataset(images, width, height,annotations, remove, augment,i
     remove_classes_from_annotations(annotations,remove,output_file='data/modified/modified_annotations.json')
 
     # # augment the classes
-    generate_augmented_images('data/modified/modified_annotations_updated.json',augment,'data/resized_images','data/resized_images')
+    generate_augmented_images('data/modified/modified_annotations.json',augment,'data/resized_images','data/resized_images')
 
     # convert the coco annotations to yolo format
     convert_coco_json('data/modified',annotation_file='data/modified/modified_annotations_updated.json')

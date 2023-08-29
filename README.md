@@ -42,6 +42,10 @@ pip install -r requirements.txt
 - Also outputs bar graphs of class distribution in each set
 - Usage: `python split_data.py --file_dir <path_to_yolo_labels_directory> --output_dir <path_to_output_dir> --images <path_to_images> --image_type <jpg/png>`
 - Check the script for defaults
+
+### format_json.py
+- Formats a json file to be more readable
+- Usage: `python format_json.py  <path_to_json_file>  <path_to_output_file>`
 # Training on the yolo_training VM on GCP
 
 

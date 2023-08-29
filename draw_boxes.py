@@ -1,4 +1,5 @@
 import cv2
+import argparse
 
 def draw_bounding_box(img, annotation):
     img = cv2.imread(img)
@@ -30,10 +31,13 @@ def draw_bounding_box(img, annotation):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-if __name__ == '__main__':
+   
     parser = argparse.ArgumentParser()
     parser.add_argument('--img', help='path to the image')
     parser.add_argument('--annotation', help='path to the annotation')
     args = parser.parse_args()
-draw_bounding_box(args.img, args.annotation)
+
+    if __name__ == '__main__':
+
+        draw_bounding_box(args.img, args.annotation)
 

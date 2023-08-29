@@ -30,5 +30,10 @@ def draw_bounding_box(img, annotation):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-draw_bounding_box('data/split_data/train/images/wpb_harriscreek_20210215_02150080.jpg','data/split_data/train/labels/wpb_harriscreek_20210215_02150080.txt')
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--img', help='path to the image')
+    parser.add_argument('--annotation', help='path to the annotation')
+    args = parser.parse_args()
+draw_bounding_box(args.img, args.annotation)
 

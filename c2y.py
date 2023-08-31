@@ -10,7 +10,6 @@ def convert_coco_json(dir=str, annotation_file=str):
     counter = 0
     save_dir = os.path.join(dir,'converted')  # output directory
     
-
     # Import json
     with open(annotation_file) as f:
         fn = Path(save_dir) / 'labels'   # folder name
@@ -32,15 +31,15 @@ def convert_coco_json(dir=str, annotation_file=str):
                 counter += 1
                 #sys.stdout.write(f'\r {counter} duplicate images found')
                 
-
         # Create image-annotations dict
-        imgToAnns = defaultdict(list)
-        ann_counter = 0
+        imgToAnns = {}
         for ann in data['annotations']:
-            ann_counter += 1
-            imgToAnns[ann['image_id']].append(ann)
+
+            if ann['image_id'] not in imgToAnns:
+                imgToAnns[ann['image_id']] = [ann]
+
        
-        print(f'Number of duplicate images: {counter}')
+        print(f'Number images: {len(images)}')
         print(f'annotations length: {len(imgToAnns)}')
         # Write labels file
         for img_id, anns in imgToAnns.items():
@@ -75,10 +74,9 @@ def convert_coco_json(dir=str, annotation_file=str):
                     line = *(bboxes[i]),  # cls, box or segments
                     file.write(('%g ' * len(line)).rstrip() % line + '\n')
                     
-
 parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5 format.')
 parser.add_argument('--dir', type=str, default='data/modified', help='directory to save converted labels')
-parser.add_argument('--annotation_file', type=str, default='/data/modified/modified_annotations_updated.json', help='annotation file name')
+parser.add_argument('--annotation_file', type=str, default='data/modified/modified_annotations_updated.json', help='annotation file name')
 
 if __name__ == '__main__':
     args = parser.parse_args()

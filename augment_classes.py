@@ -5,8 +5,8 @@ import albumentations as A
 import copy
 from datetime import datetime
 import sys
-import random
 import string
+import random
 
 def augment_and_save_image(image, file_name, output_folder, version):
      # Save the augmented image in the same folder as the original image
@@ -29,7 +29,7 @@ def augment_and_save_image(image, file_name, output_folder, version):
         # Apply the transformations to the image
         augmented_image = transform(image=image)["image"]
         cv2.imwrite(output_path, augmented_image)
-        print(f"Augmented image saved as: {output_path}")
+        #print(f"Augmented image saved as: {output_path}")
     return new_file_name
 
 def generate_augmented_images(json_file, augment_ids, image_folder, output_folder):
@@ -54,29 +54,31 @@ def generate_augmented_images(json_file, augment_ids, image_folder, output_folde
             file_name = new_annotation["file_name"]
             image_path = os.path.join(image_folder, file_name)
             image = cv2.imread(image_path)
+
             if image is not None:
                 file_name = f'{new_annotation["file_name"]}_augmented'
-                for i in range(2):
-                    res = ''.join(random.choices(string.ascii_lowercase +
-                                    string.digits, k=5))
-                    version = f'{res}_{i}' 
-                    new_id = version
+                for i in range(5):
+                    new_id = int(''.join(random.choices(string.digits, k=16)))
+                    res = ''.join(random.choices(string.ascii_uppercase +string.digits, k=6))
+                    version = res
                     new_file_name = augment_and_save_image(image, file_name, output_folder, version)
                     
                     new_annotation['file_name'] = new_file_name
                     new_annotation['image_id'] = new_id
                     annotations_length += 1
-                    new_annotation['id'] = annotations_length
+                    new_annotation['id'] = new_id
                     updated_annotations.append(new_annotation)
-                    
+                    print(f'Total new annotatinos: {len(updated_annotations)}')
                     new_image = copy.copy(image_template)
                     new_image['file_name'] = new_file_name
                     new_image['id'] = new_id
                     data["images"].append(new_image)
                     
-                    #print(f'Successfully inserted {new_annotation} ::: {new_image}')
+                    # print(f'Successfully inserted {new_annotation} ::: {new_image}')
             
     data["annotations"] += updated_annotations
+    
+    print(len(data["annotations"]))
 
     updated_json_file = os.path.splitext(json_file)[0] + "_updated.json"
     with open(updated_json_file, "w") as f:

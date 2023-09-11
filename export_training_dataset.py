@@ -18,7 +18,7 @@ def export_training_dataset(images, width, height,annotations, remove, augment,i
     #remove_classes_from_annotations(annotations,remove,output_file='data/modified/modified_annotations.json')
 
     # # augment the classes
-    generate_augmented_images('data/modified/modified_annotations.json',augment,'data/resized_images','data/augmented_images')
+    #generate_augmented_images('data/modified/modified_annotations.json',augment,'data/resized_images','data/augmented_images')
     
     # # count the number of images
     #count_images()
@@ -30,7 +30,7 @@ def export_training_dataset(images, width, height,annotations, remove, augment,i
     #count_label_files()
 
     # split the data into train and test
-    #split_data('data/modified/converted/labels','data/split_data','data/resized_images',image_type=image_type)
+    split_data('data/modified/converted/labels','data/split_data','resized_images',image_type=image_type)
 
    
     

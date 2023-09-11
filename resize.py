@@ -32,7 +32,7 @@ def resize_images(image_dir, target_width,output_dir):
 
 parser = argparse.ArgumentParser(description='Resize images')
 parser.add_argument('--image_dir', type=str, default='images', help='path to the images')
-parser.add_argument('--output_dir', type=str, default='resized_images_2', help='path to the resized images')
+parser.add_argument('--output_dir', type=str, default='resized_images', help='path to the resized images')
 parser.add_argument('--target_width', type=int, default=640, help='width of the resized images')
 
 

@@ -16,7 +16,7 @@ def count_annotations():
 
 
     print(f'Repeat Images: {repeat_images}')
-    print(f'Number of Images in annotations: {len(data["images"])}')
+    print(f'Number of Images in annotations: {len(image_dict)}')
     print(f'Number of Annotations: {len(data["annotations"])}')
 
 

@@ -1,3 +1,0 @@
-balance out classes 
- - cap larger classes
- - boost smaller classes

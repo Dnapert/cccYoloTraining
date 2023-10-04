@@ -24,23 +24,24 @@ def generate_augmented_images(annotations_file, image_folder, output_folder, cat
         "width": 7296,
         "id": 2020120011100728
     }
-
     for annotation in annotations:
         if annotation["category_id"] in category_augmentations:
             print(annotation["category_id"])
-            new_annotation = copy.copy(annotation)
-            file_name = new_annotation["file_name"]
+            file_name = annotation["file_name"]
             image_path = os.path.join(image_folder, file_name)
             image = cv2.imread(image_path)
 
             if image is not None:
-                file_name = f'{new_annotation["file_name"]}_augmented'
+                file_name = f'{annotation["file_name"]}_augmented'
                 for i in range(category_augmentations[annotation["category_id"]]):
+                    # Moved the new_annotation creation here
+                    new_annotation = copy.copy(annotation)
+
                     new_id = int(''.join(random.choices(string.digits, k=16)))
-                    res = ''.join(random.choices(string.ascii_uppercase +string.digits, k=6))
+                    res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
                     version = res
                     new_file_name = augment_and_save_image(image, file_name, output_folder, version)
-                    
+
                     new_annotation['file_name'] = new_file_name
                     new_annotation['image_id'] = new_id
                     annotations_length += 1
@@ -51,9 +52,9 @@ def generate_augmented_images(annotations_file, image_folder, output_folder, cat
                     new_image['file_name'] = new_file_name
                     new_image['id'] = new_id
                     data["images"].append(new_image)
-                    
-                    # print(f'Successfully inserted {new_annotation} ::: {new_image}')
-            
+        else:
+            updated_annotations.append(annotation)
+                
     data["annotations"] += updated_annotations
     
     print(len(data["annotations"]))
@@ -108,6 +109,6 @@ if __name__ == "__main__":
     
     generate_augmented_images(annotations_file=args.annotations_path, image_folder=args.image_folder, output_folder=args.output_folder, category_augmentations=category_augmentations)
 
-    ''' python augment_classes.py --annotations_path data/modified/modified_annotations.json --image_fol
-der resized_images --output_folder resized_images --augment_categories '0,5 3,5 6,5 8,5'
+    ''' python augment_classes.py --annotations_path data/modified/formatted.json --image_fol
+der data/resized_images --output_folder data/resized_images --augment_categories '0,5 3,5 6,5'
 '''

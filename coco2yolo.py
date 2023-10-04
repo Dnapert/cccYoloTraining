@@ -78,7 +78,7 @@ def convert_coco_json(dir=str, annotation_file=str):
 
 parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5 format.')
 parser.add_argument('--dir', type=str, default='data/modified', help='directory to save converted labels')
-parser.add_argument('--annotation_file', type=str, default='/data/modified/modified_annotations_updated.json', help='annotation file name')
+parser.add_argument('--annotation_file', type=str, default='data/modified/formatted_updated_updated.json', help='annotation file name')
 
 if __name__ == '__main__':
     args = parser.parse_args()

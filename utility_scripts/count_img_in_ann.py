@@ -1,7 +1,10 @@
 import json
 
-def count_annotations():
-    with open('data/modified/modified_annotations_updated.json', 'r') as json_file:
+def count_annotations(annotation_file='data/modified/modified_annotations_updated.json'):
+    '''
+    Count number of images in an annotation file
+    '''
+    with open(annotation_file, 'r') as json_file:
         data = json.load(json_file)
     image_dict = {}
     repeat_images = 0

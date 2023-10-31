@@ -96,9 +96,9 @@ def augment_and_save_image(image, file_name, output_folder, version):
 
 
 parser = argparse.ArgumentParser(description='Augent photos to mimic night vision')
-parser.add_argument('--annotations_path', type=str, help='Path to annotations file')
-parser.add_argument('--image_folder',type=str, help='Path to image input folder for augmentation')
-parser.add_argument('--output_folder', type=str, help='Path to ouput folder for augmented images')
+parser.add_argument('--annotations_path', type=str, default='data/modified/formatted.json',help='Path to annotations file')
+parser.add_argument('--image_folder',type=str,default='data/resized_images', help='Path to image input folder for augmentation')
+parser.add_argument('--output_folder', type=str,default='data/resized_images',  help='Path to ouput folder for augmented images')
 
 if __name__ == "__main__":
     args = parser.parse_args()

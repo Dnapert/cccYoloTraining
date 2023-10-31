@@ -1,39 +1,45 @@
 # Collection of all our training data and Data augmentation code
 
+Contents:
+
+- [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-and-data-augmentation-code)
+  - [Data Augmentation Scripts](#data-augmentation-scripts)
+    - [coco2yolo.py](#coco2yolopy)
+    - [remove\_classes.py](#remove_classespy)
+    - [augment\_classes.py](#augment_classespy)
+    - [split\_data.py](#split_datapy)
+    - [format\_json.py](#format_jsonpy)
+- [Uploading the Data](#uploading-the-data)
+- [HELP: I can't enter the yolov5 directory](#help-i-cant-enter-the-yolov5-directory)
+  - [Uploading the dataset](#uploading-the-dataset)
+  - [Uploading directly to the VM](#uploading-directly-to-the-vm)
+  - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
+- [Training](#training)
+- [Creating this VM on GCP for training Yolov5](#creating-this-vm-on-gcp-for-training-yolov5)
+- [Utility Scripts](#utility-scripts)
 ```
 conda create -n <env_name> python=3.8
 conda activate <env_name>
-cd <path_to_this_repo>
+cd <path_to_this_project>
 pip install -r requirements.txt
 ```
 
 ## Data Augmentation Scripts
 
-### export_training_dataset.py
-- Removes all instances of specified classes from a COCO annotation file
-- Converts COCO annotations to YOLO format
-- Augments images of given category ID's
-- Splits a dataset into train, val and test sets
-- Ouputs files ready for YOLO training under datasets directory in specified output directory
-- Also outputs bar graphs of class distribution in each set
-- Usage: Place images in data directory under images folder and annotations in data directory
-- `python export_training_dataset.py --remove <list of class ID's to remove seperated by spaces ex 1 2 3 --augment <list of class ID's to augment seperated by spaces ex 1 2 3> `
-### resize.py:
-   - Resizes all images in a directory to a specified width and maintains aspect ratio
-   - Usage: `python resize.py --image_dir <path_to_directory> --output_dir <image output directory> --target_width <width> `
+
 
 ### coco2yolo.py
 
  - Converts COCO annotations to YOLO format
-- Usage: `python coco2yolo.py --json_dir <path_to_directory_with_json> --use_segments <True/False optional> ---cls91to80 <True/False optional> --fixed_size <True/False> --width <width> --height <height>`
- -  The fixed_size arg is to be used if you want the annotations converted to a fixed image size. If you want the annotations to be converted to the original image size, don't use the arg, it defaults to false. If set to true, specify the --width and --height args.
+- Usage: `python coco2yolo.py --dir <directory to save annoations> --annotation_file <json annotations file> `
+
   
 ### remove_classes.py
-- Removes all instances of specified classes from a COCO annotation file
-- Usage:`python remove_classes.py --annotations_path <path_to_annotations> --output_file <path_to_output_annotations.json> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
+- Removes all instances of specified classes from a COCO JSON annotation file
+- Usage:`python remove_classes.py --annotations_path <path to annotations> --output_file <path to output annotations> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
 
 ### augment_classes.py
-- Augments images of category IDs 0, 3, 6, 8 and adds annotations to those new augmented images
+- Augments images of category IDs 0, 3, 6, 8 and adds specified number of annotations to those new augmented images
 - Usage:`python augment_classes.py <path_to_annotations> <path_to_original_images> <path_to_new_augmented_images>`
 
 ### split_data.py
@@ -46,25 +52,61 @@ pip install -r requirements.txt
 ### format_json.py
 - Formats a json file to be more readable
 - Usage: `python format_json.py  <path_to_json_file>  <path_to_output_file>`
-# Training on the yolo_training VM on GCP
+  
 
+# Uploading the Data
 
-### After you have your data converted, you should have a directory named split_data.
+ After you have your data converted, you should have a directory named split_data.
 - Make sure that you have a data.yaml file in your split_data directory with the correct number of classes and the class names list, use the data.yaml in the data directory as a template
+
+ The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have a category_id of 1, and so on.
+
+ The paths to the directories in the data.yaml need to be checked as well, if you attempt to train and receive an error about the path to the train, val, or test directory, check the path in the data.yaml file and make sure it is correct.
+# HELP: I can't enter the yolov5 directory
+   if a user cannot enter the yolov5 directory, i.e. the directory appears as a folder to a user, the owner (person who created the folder) needs to change the permissions of the directory to allow other users to enter it. This can be done with the following command:
+   to allow a user to enter a directory:
+   ```
+   chmod o+rx <directory_name>
+   ```
+   
+  ## Uploading the dataset
  - Go ahead and zip this directory for uploading to the vm
   ```
   zip -r <new_name> split_data/
   ```
-  - once uploaded to the vm, move your zip file to the yolov5 directory and unzip it
-  ```
-  mv <file_name>.zip ~/yolov5
-  cd yolov5
-  unzip <file_name>.zip
-  ```
- - You should now have the directory with all the data unzipped and ready to train
 
+   ## Uploading directly to the VM
+   - once uploaded to the vm, move your zip file to the yolov5 directory and unzip it
+   ```
+   mv <file_name>.zip ~/yolov5
+   cd yolov5
+   unzip <file_name>.zip
+   ```
+ - You should now have the directory with all the data unzipped and ready to train
+ ## Uploading to a bucket and downloading to the VM
+   - Upload the zip file to a bucket in GCP (you can use the web interface or gsutil)
+
+   - with gsutil
+   ```
+   gsutil cp <file_name>.zip gs://<bucket_name>
+   ```
+   - On the VM, download the zip file using gsutil
+   ```
+   gsutil cp gs://<bucket_name>/<file_name>.zip 
+   ```
+   
+   - Unzip the file
+   ```
+   unzip <file_name>.zip
+   ```
+   - You should now have the directory inside the yolov5 directory with all the data unzipped and ready to train
  
-### The Vm is already set up with a virtual environment and the yolov5 project. Once logged into the machine, navigate to the yolov5 directory
+ The Vm is already set up with a virtual environment and the yolov5 project. Once logged into the machine, navigate to the yolov5 directory
+
+ # Training
+
+ once the dataset is uploaded, you can train
+ 
 ``` 
 cd yolov5
 ```
@@ -169,3 +211,23 @@ Same here
 export LD_LIBRARY_PATH=/usr/local/cuda-11.0/lib64/{LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 ```
 And thats it!
+
+# Utility Scripts
+   There are a number of utility scripts in the utility_scripts directory to help with data auditing and other things
+
+   - count_annotations.py :
+       - Counts the number of annotations in a coco json file
+   and repeat images, good to check if any augmentation created duplicate images
+    
+   - count_images.py :
+       - counts the number of images in a directory
+   - count_img_in_ann.py :
+      - counts the number of images in a json annotation file
+   - count_labels.py:
+      - counts the number of label files in a directory
+   - draw_boxes.py
+       - draw bounding boxes on an image provided a label file and image
+   - format_json.py:
+       - makes a json file more readable
+   - labels_per_class.py
+       - outputs a graph of number of labels per class in an annotation file

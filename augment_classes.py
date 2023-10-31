@@ -76,10 +76,10 @@ def augment_and_save_image(image, file_name, output_folder, version):
             # Add your desired transformations here
             A.RandomBrightnessContrast(p=0.25),
             A.MedianBlur(p=0.25),
-            A.RandomFog(p=0.1),
+            #A.RandomFog(p=0.1),
             A.RandomSnow(p=0.1),
             A.RandomShadow(p=0.1),
-            A.RandomRain(p=0.1),
+            #A.RandomRain(p=0.1),
         ])
         # Apply the transformations to the image
         augmented_image = transform(image=image)["image"]
@@ -96,9 +96,9 @@ def parse_input(input_string):
     return category_augmentations
 
 parser = argparse.ArgumentParser(description='Remove classes from annotations file')
-parser.add_argument('--annotations_path', type=str, help='Path to annotations file')
-parser.add_argument('--image_folder',type=str, help='Path to image input folder for augmentation')
-parser.add_argument('--output_folder', type=str, help='Path to ouput folder for augmented images')
+parser.add_argument('--annotations_path', type=str,default='data/formatted_updated.json' ,help='Path to annotations file')
+parser.add_argument('--image_folder',type=str,default='data/resized_images', help='Path to image input folder for augmentation')
+parser.add_argument('--output_folder', type=str, default='data/resized_images',help='Path to ouput folder for augmented images')
 parser.add_argument('--augment_categories', type=str, help='Category followed by comma followed by amount separated by spaces: 1,50 5,10 9,100')
 
 if __name__ == "__main__":
@@ -109,6 +109,5 @@ if __name__ == "__main__":
     
     generate_augmented_images(annotations_file=args.annotations_path, image_folder=args.image_folder, output_folder=args.output_folder, category_augmentations=category_augmentations)
 
-    ''' python augment_classes.py --annotations_path data/modified/formatted.json --image_fol
-der data/resized_images --output_folder data/resized_images --augment_categories '0,5 3,5 6,5'
+    ''' python augment_classes.py --annotations_path data/modified/formatted_updated.json --image_folder data/resized_images --output_folder data/resized_images --augment_categories '0,2 2,3 3,5 6,5'
 '''

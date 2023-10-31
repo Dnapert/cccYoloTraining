@@ -1,6 +1,10 @@
 import json
 
 def count_annotations():
+    '''
+   Counts the number of annotations in a coco json file
+   and repeat images, good to check if any augmentation created duplicate images
+    '''
     with open('data/modified/modified_annotations_updated.json', 'r') as json_file:
         data = json.load(json_file)
     image_dict = {}

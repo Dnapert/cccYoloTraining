@@ -169,3 +169,4 @@ split_data/
 data/modified
 *.zip
 data
+training/

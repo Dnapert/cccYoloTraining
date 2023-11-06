@@ -1,0 +1,2 @@
+nc: 6
+names: ['plastic_bag', 'plastic_bottle', 'plastic_container', 'plastic_wrapper', 'foam_container', 'foam_other']

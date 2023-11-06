@@ -47,9 +47,9 @@ def remove_classes_from_annotations(annotations_path, classes_to_remove, output_
             json.dump(annotations, f)
         
 parser = argparse.ArgumentParser(description='Remove classes from annotations file')
-parser.add_argument('--annotations_path', type=str, help='Path to annotations file')
-parser.add_argument('--classes_to_remove', nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
-parser.add_argument('--output_file',default='coco_classes_removed.json', type=str, help='Path to output file')
+parser.add_argument('-a','--annotations_path', type=str, help='Path to annotations file')
+parser.add_argument('-c','--classes_to_remove', nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
+parser.add_argument('-o','--output_file',default='annotations/coco_classes_removed.json', type=str, help='Path to output file')
 
 
 

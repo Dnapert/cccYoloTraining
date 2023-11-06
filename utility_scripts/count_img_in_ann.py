@@ -1,6 +1,6 @@
 import json
 
-def count_annotations(annotation_file='data/modified/modified_annotations_updated.json'):
+def count_annotations(annotation_file='annotations/merged_dataset.json'):
     '''
     Count number of images in an annotation file
     '''
@@ -9,8 +9,8 @@ def count_annotations(annotation_file='data/modified/modified_annotations_update
     image_dict = {}
     repeat_images = 0
 
-    for i in range(0,len(data['annotations'])):
-        file = data['annotations'][i]['file_name']
+    for i in data['images']:
+        file = i['file_name']
         if file not in image_dict:
             image_dict[file] = 1
         else:

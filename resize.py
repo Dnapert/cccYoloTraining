@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import argparse
 import sys
-
+import shutil
 
 def resize_images(image_dir, target_width,output_dir):
         fn = Path(output_dir) 
@@ -21,7 +21,11 @@ def resize_images(image_dir, target_width,output_dir):
     
             # Calculate the new height based on the target width and aspect ratio
             target_height = int(target_width / aspect_ratio)
-    
+            if target_width >= width:
+                print(f'Warning: {filename} is already the same size or smaller than the target width of {target_width}')
+                # move the image to the output directory
+                shutil.move(os.path.join(image_dir,filename), output_dir)
+                continue
             image = cv2.resize(image, (int(target_width),int(target_height)), interpolation=cv2.INTER_AREA)
             cv2.imwrite(os.path.join(output_dir,filename), image)
         print('\nDone!')
@@ -32,7 +36,7 @@ def resize_images(image_dir, target_width,output_dir):
 
 parser = argparse.ArgumentParser(description='Resize images')
 parser.add_argument('--image_dir', type=str, default='images', help='path to the images')
-parser.add_argument('--output_dir', type=str, default='resized_images', help='path to the resized images')
+parser.add_argument('--output_dir', type=str, default='data/resized_images', help='path to the resized images')
 parser.add_argument('--target_width', type=int, default=640, help='width of the resized images')
 
 

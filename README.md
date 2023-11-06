@@ -3,14 +3,16 @@
 Contents:
 
 - [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-and-data-augmentation-code)
+- [Basic workflow for training](#basic-workflow-for-training)
+- [!! Important Notes, READ THIS !!](#-important-notes-read-this-)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
     - [split\_data.py](#split_datapy)
-    - [format\_json.py](#format_jsonpy)
+    - [resize.py](#resizepy)
 - [Uploading the Data](#uploading-the-data)
-- [HELP: I can't enter the yolov5 directory](#help-i-cant-enter-the-yolov5-directory)
+- [HELP: I can't enter the yolov5 directory!](#help-i-cant-enter-the-yolov5-directory)
   - [Uploading the dataset](#uploading-the-dataset)
   - [Uploading directly to the VM](#uploading-directly-to-the-vm)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
@@ -23,7 +25,21 @@ conda activate <env_name>
 cd <path_to_this_project>
 pip install -r requirements.txt
 ```
-
+# Basic workflow for training
+1. put all your images in a directory named images
+2. remove any classes you don't want to train on from the annotations
+3. resize all images to 640 width
+4. optionally do any augmentation you want
+5. convert the coco annotations to yolo format
+6. split the data into train, val, and test sets
+7. upload the data to the VM
+8. train
+   
+# !! Important Notes, READ THIS !!
+   - We train on 640x480 images, so before augmenting, make sure all images are that size. The resize.py script will do this for you. This also speeds up the augmentation process.
+   - Look at the class_id's in any new json annotation file, sometimes when exporting an annotated dataset from CVAT, the class_id's will be 1 indexed. A quick way to check is to use the get_class_dict.py script, they need to be 0 indexed. If this is the case use the remap_classes.py script to remap the class_id's to be 0 indexed.
+   - If you remove classes from the dataset, make sure to remap the class_id's to be 0 indexed, and have no missing indices,otherwise the training could fail.
+   - The image names in the annotations should just be the name, not paths with slashes, i.e. /path/to/image.jpg, it should just be image.jpg. To remove leading slashes from the image names in the annotations, use the split_image_names.py script.
 ## Data Augmentation Scripts
 
 
@@ -39,8 +55,10 @@ pip install -r requirements.txt
 - Usage:`python remove_classes.py --annotations_path <path to annotations> --output_file <path to output annotations> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
 
 ### augment_classes.py
-- Augments images of category IDs 0, 3, 6, 8 and adds specified number of annotations to those new augmented images
-- Usage:`python augment_classes.py <path_to_annotations> <path_to_original_images> <path_to_new_augmented_images>`
+- Augments images of given category ID's
+  and adds specified number of annotations to those new augmented images. 
+- Please see the script for defaults and usage
+- Usage:`python augment_classes.py --annotations_path <path_to_annotations> --image_folder <path_to_original_images> --output_folder <path_to_new_augmented_images> --augment_categories <string list of id's and number of augmentations to add to each id '0,2 1,3' etc.> `
 
 ### split_data.py
 - Splits a dataset into train, val and test sets
@@ -49,10 +67,9 @@ pip install -r requirements.txt
 - Usage: `python split_data.py --file_dir <path_to_yolo_labels_directory> --output_dir <path_to_output_dir> --images <path_to_images> --image_type <jpg/png>`
 - Check the script for defaults
 
-### format_json.py
-- Formats a json file to be more readable
-- Usage: `python format_json.py  <path_to_json_file>  <path_to_output_file>`
-  
+### resize.py
+- Resizes all images in a directory to a specified size, default is 640 width
+- Usage: `python resize.py --image_dir <path_to_images> --output_dir <path_to_output_dir> --target_width <width>`
 
 # Uploading the Data
 
@@ -62,17 +79,21 @@ pip install -r requirements.txt
  The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have a category_id of 1, and so on.
 
  The paths to the directories in the data.yaml need to be checked as well, if you attempt to train and receive an error about the path to the train, val, or test directory, check the path in the data.yaml file and make sure it is correct.
-# HELP: I can't enter the yolov5 directory
+# HELP: I can't enter the yolov5 directory!
    if a user cannot enter the yolov5 directory, i.e. the directory appears as a folder to a user, the owner (person who created the folder) needs to change the permissions of the directory to allow other users to enter it. This can be done with the following command:
    to allow a user to enter a directory:
    ```
    chmod o+rx <directory_name>
    ```
+   if all else fails and you're tired of trying to figure out permissions, just re clone the yolov5 repo
+   ```
+   git clone https://github.com/ultralytics/yolov5.git
+```
    
   ## Uploading the dataset
- - Go ahead and zip this directory for uploading to the vm
+ - Go ahead and zip your new data directory for uploading to the vm
   ```
-  zip -r <new_name> split_data/
+  zip -r <new_name> <data_dir>
   ```
 
    ## Uploading directly to the VM
@@ -231,3 +252,8 @@ And thats it!
        - makes a json file more readable
    - labels_per_class.py
        - outputs a graph of number of labels per class in an annotation file
+   - get_class_dict.py
+       - outputs a dictionary of class names and their corresponding category_id from a json annotation file
+   - remap_classes.py
+       - remaps the category_id's in a json annotation file to be 0 indexed
+       - also easily modified to remap to any index if you've removed classes from the dataset (it is necessary to have the category_id's be 0 indexed for training and not have missing indices)

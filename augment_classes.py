@@ -8,8 +8,14 @@ import sys
 import string
 import random
 import argparse
+from utility_scripts import labels_per_class
 
 def generate_augmented_images(annotations_file, image_folder, output_folder, category_augmentations):
+    '''
+    augments images in a coco dataset based on the category id and the number of augmentations specified
+    will produce a new json file with the augmented images
+    displays a bar graph and prints a count of the number of each class in the new annotations file
+    '''
     with open(annotations_file, "r") as f:
         data = json.load(f)
 
@@ -26,7 +32,7 @@ def generate_augmented_images(annotations_file, image_folder, output_folder, cat
     }
     for annotation in annotations:
         if annotation["category_id"] in category_augmentations:
-            print(annotation["category_id"])
+            #print(annotation["category_id"])
             file_name = annotation["file_name"]
             image_path = os.path.join(image_folder, file_name)
             image = cv2.imread(image_path)
@@ -47,7 +53,7 @@ def generate_augmented_images(annotations_file, image_folder, output_folder, cat
                     annotations_length += 1
                     new_annotation['id'] = new_id
                     updated_annotations.append(new_annotation)
-                    print(f'Total new annotations: {len(updated_annotations)}')
+                    #print(f'Total new annotations: {len(updated_annotations)}')
                     new_image = copy.copy(image_template)
                     new_image['file_name'] = new_file_name
                     new_image['id'] = new_id
@@ -60,6 +66,7 @@ def generate_augmented_images(annotations_file, image_folder, output_folder, cat
     print(len(data["annotations"]))
 
     updated_annotations_file = os.path.splitext(annotations_file)[0] + "_updated.json"
+   
     with open(updated_annotations_file, "w") as f:
         json.dump(data, f, indent=4)
         
@@ -96,10 +103,10 @@ def parse_input(input_string):
     return category_augmentations
 
 parser = argparse.ArgumentParser(description='Remove classes from annotations file')
-parser.add_argument('--annotations_path', type=str,default='data/formatted_updated.json' ,help='Path to annotations file')
-parser.add_argument('--image_folder',type=str,default='data/resized_images', help='Path to image input folder for augmentation')
-parser.add_argument('--output_folder', type=str, default='data/resized_images',help='Path to ouput folder for augmented images')
-parser.add_argument('--augment_categories', type=str, help='Category followed by comma followed by amount separated by spaces: 1,50 5,10 9,100')
+parser.add_argument('-a','--annotations_path', type=str,default='data/formatted_updated.json' ,help='Path to annotations file')
+parser.add_argument('-i','--image_folder',type=str,default='data/resized_images', help='Path to image input folder for augmentation')
+parser.add_argument('-o','--output_folder', type=str, default='data/resized_images',help='Path to ouput folder for augmented images')
+parser.add_argument('-c','--augment_categories', type=str, help='Category followed by comma followed by amount separated by spaces: 1,50 5,10 9,100')
 
 if __name__ == "__main__":
     args = parser.parse_args()

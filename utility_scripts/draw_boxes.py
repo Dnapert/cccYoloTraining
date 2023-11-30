@@ -3,7 +3,7 @@ import argparse
 
 def draw_bounding_box(img, annotation):
     '''
-    this takes an image and an annotation in the form of a txt file (yolo format)
+    takes an image and an annotation in the form of a txt file (yolo format)
     '''
     img = cv2.imread(img)
     image_width = 640

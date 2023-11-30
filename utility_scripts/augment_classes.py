@@ -81,12 +81,12 @@ def augment_and_save_image(image, file_name, output_folder, version):
         # Define your augmentation pipeline using Albumentations
         transform = A.Compose([
             # Add your desired transformations here
-            A.RandomBrightnessContrast(p=0.25),
+            #A.RandomBrightnessContrast(p=0.25),
             A.MedianBlur(p=0.25),
             #A.RandomFog(p=0.1),
-            A.RandomSnow(p=0.1),
-            A.RandomShadow(p=0.1),
-            #A.RandomRain(p=0.1),
+            A.RandomSnow(p=0.2),
+            A.RandomShadow(p=0.2),
+            A.RandomRain(p=0.2),
         ])
         # Apply the transformations to the image
         augmented_image = transform(image=image)["image"]

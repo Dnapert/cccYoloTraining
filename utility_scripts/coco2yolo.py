@@ -3,10 +3,15 @@ import json
 import numpy as np
 from collections import defaultdict
 import argparse
-from utils import *
-import sys
+from utility_scripts.utils import *
+
 
 def convert_coco_json(dir=str, annotation_file=str):
+    '''
+    Converts COCO annotations to YOLOv5 format.
+    :param dir: directory to save converted labels
+    :param annotation_file: annotation file name
+    '''
     counter = 0
     save_dir = os.path.join(dir,'converted')  # output directory
     
@@ -44,8 +49,6 @@ def convert_coco_json(dir=str, annotation_file=str):
         print(f'annotations length: {len(imgToAnns)}')
         # Write labels file
         for img_id, anns in imgToAnns.items():
-            #print(f'Converting image {counter} of {len(imgToAnns)}...')
-            #img = images['%g' % img_id] also causing error
             img = images[img_id]
             h, w, f = img['height'], img['width'], img['file_name']
             # if fixed_size:
@@ -78,12 +81,9 @@ def convert_coco_json(dir=str, annotation_file=str):
 
 parser = argparse.ArgumentParser(description='Convert COCO annotations to YOLOv5 format.')
 parser.add_argument('-d','--dir', type=str, default='data/modified', help='directory to save converted labels')
-parser.add_argument('-a','--annotation_file', type=str, default='annotations/exp12_updated.json', help='annotation file name')
+parser.add_argument('-a','--annotation_file', type=str, default='annotations/v8exp7.json', help='annotation file name')
 
 if __name__ == '__main__':
     args = parser.parse_args()
 
     convert_coco_json(dir=args.dir, annotation_file=args.annotation_file)
-
-#json dir is the directory where the json file is located
-#'training/yolov5_training/exp<n>' is the directory where the json files are located here

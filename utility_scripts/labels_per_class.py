@@ -2,8 +2,9 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import os
 
-def count_annotations(annotation_file): 
+def labels_per_class(name,annotation_file): 
     '''
     Count the number of annotations per class in a COCO format annotation file
     '''
@@ -16,12 +17,13 @@ def count_annotations(annotation_file):
                 label_dict[label] = 1
             else:
                 label_dict[label] += 1
-    bar_graph(label_dict)
+        bar_graph(label_dict,name)
+        label_dict = {k: v for k, v in sorted(label_dict.items(), key=lambda item: item[0])}
 
-    print(label_dict)
+    print(f"labels per class: {label_dict}")
+    return label_dict
 
-
-def bar_graph(label_dict):
+def bar_graph(label_dict,name):
     
     labels, values = zip(*sorted(label_dict.items()))
     indexes = np.arange(len(labels))
@@ -30,7 +32,9 @@ def bar_graph(label_dict):
     plt.xticks(indexes , labels)
     plt.xlabel('labels')
     plt.ylabel('occurances of labels')
-    plt.show()
+    if not os.path.exists(name):
+        os.makedirs(name,exist_ok=True)
+    plt.savefig(f"{name}/labels.png")
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--annotations', default='../data/modified/modified.json', help='path to the annotation directory')
@@ -38,4 +42,4 @@ argparser.add_argument('--annotations', default='../data/modified/modified.json'
 if __name__ == '__main__':
 
     args = argparser.parse_args()
-    count_annotations(args.annotations)
+    labels_per_class(args.annotations)

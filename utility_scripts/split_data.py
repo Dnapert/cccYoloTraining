@@ -1,5 +1,5 @@
 import os
-from utils import *
+from utility_scripts.utils import *
 import shutil
 from random import shuffle
 import argparse
@@ -66,7 +66,7 @@ def bar_graph(label_dict, file_path, dataset_name):
             
 parser = argparse.ArgumentParser()
 parser.add_argument('--file_dir', type=str, default='data/modified/converted/labels', help='directory of the label files')
-parser.add_argument('--output_dir', type=str, default='data/split_data', help='directory of the output files')
+parser.add_argument('--output_dir', type=str, default='data/v8exp7_data', help='directory of the output files')
 parser.add_argument('--images', type=str, default='data/resized_images', help='directory of the images')
 parser.add_argument('--image_type', type=str, default='JPG', help='type of image')
 

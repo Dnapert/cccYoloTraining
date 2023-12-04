@@ -4,8 +4,8 @@ Contents:
 
 - [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-and-data-augmentation-code)
 - [Basic workflow for training](#basic-workflow-for-training)
-- [!! Important Notes, READ THIS !!](#-important-notes-read-this-)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
+  - [A note on image sets](#a-note-on-image-sets)
     - [coco2yolo.py](#coco2yolopy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
@@ -16,41 +16,32 @@ Contents:
   - [Uploading the dataset](#uploading-the-dataset)
   - [Uploading directly to the VM](#uploading-directly-to-the-vm)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
-- [Training](#training)
-- [Creating this VM on GCP for training Yolov5](#creating-this-vm-on-gcp-for-training-yolov5)
+- [Training Yolov5](#training-yolov5)
 - [Utility Scripts](#utility-scripts)
 ```
-conda create -n <env_name> python=3.8
+conda create -n <env_name> 
 conda activate <env_name>
 cd <path_to_this_project>
 pip install -r requirements.txt
 ```
 # Basic workflow for training
-Using the dataset_builder class, modify the main.py script to build/modify/export the dataset for training.
-Typical workflow is:
-- In the main.py file, fill in the constructor with your data
-   ```
-      new_dataset = DatasetBuilder(project_name='demo_2',annotations='annotations/original_annotations.json',images='images/resized_images')
-   ```
-- This will create a new project folder, if it is a new project, or it will read the config file from the given project name's directory
-- If it's a new project, it will create a folder under experiments directory, and create a config file for the project
-- After the script runs, simply keep the constuctor the same, and perform the operations needed and run it again
-```python
-   new_dataset = DatasetBuilder(project_name='demo_2',annotations='annotations/original_annotations.json',images='images/resized_images')
-
-   new_dataset.combine('annotations/12-1-23.json')
-   new_dataset.remove_classes([1,2,3])
-   new_dataset.resize_images(640)
-   new_dataset.augment_classes({2:3,4:5})
-   new_dataset.to_yolo()
-   new_dataset.split(.8,.1,.1,seed=42)
+Create an images directory, and put all of your images there.
+Add your annotations to the annotations directory, doesn't need to be here, but that's what I do.
+The main.py cli app works as an interface for the dataset_builder.py module.
+The simplest thing to do, is run ```python main.py``` in the terminal.
+You will be guided through generating your dataset.
+# A note on Image sets
+Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. If you get a permissions error, run 
 ```
-   
+chmod +x flatten_image_dirs.sh
+```
+Another small hiccup, ensure all the images have the same extension. Some of our older datasets have a capitalized .JPG, modify and use the change_file_extension.sh script for this.This is also a handy template for making other changes to file names, so keep it in mind. Same deal with the permissions
+```
+chmod +x change_files_to_jpg.sh
+```
 
 ## Data Augmentation Scripts
-
-
-
+There are a host of data augmentations scripts in the utility_scripts directory. If you want to perdform single operations on a dataset, look there. Here's a list of some of the available scripts.
 ### coco2yolo.py
 
  - Converts COCO annotations to YOLO format
@@ -78,39 +69,23 @@ Typical workflow is:
 - Resizes all images in a directory to a specified size, default is 640 width
 - Usage: `python resize.py --image_dir <path_to_images> --output_dir <path_to_output_dir> --target_width <width>`
 
-# Uploading the Data
+# Uploading the Data to the VM
 
- After you have your data converted, you should have a directory named split_data.
-- Make sure that you have a data.yaml file in your split_data directory with the correct number of classes and the class names list, use the data.yaml in the data directory as a template
+If you didn't use the main.py cli to generate your dataset, make sure to check some things before you proceed.
 
- The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have a category_id of 1, and so on.
+Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the data.yaml in the data directory as a template
+
+ The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have the category_id 1, and so on.
 
  The paths to the directories in the data.yaml need to be checked as well, if you attempt to train and receive an error about the path to the train, val, or test directory, check the path in the data.yaml file and make sure it is correct.
-# HELP: I can't enter the yolov5 directory!
-   if a user cannot enter the yolov5 directory, i.e. the directory appears as a folder to a user, the owner (person who created the folder) needs to change the permissions of the directory to allow other users to enter it. This can be done with the following command:
-   to allow a user to enter a directory:
-   ```
-   chmod o+rx <directory_name>
-   ```
-   if all else fails and you're tired of trying to figure out permissions, just re clone the yolov5 repo
-   ```
-   git clone https://github.com/ultralytics/yolov5.git
-```
-   
+
   ## Uploading the dataset
- - Go ahead and zip your new data directory for uploading to the vm
+  If you're triaing on a different machine, it's best to zip your dataset.
+ - Go ahead and zip your new data directory
   ```
   zip -r <new_name> <data_dir>
   ```
 
-   ## Uploading directly to the VM
-   - once uploaded to the vm, move your zip file to the yolov5 directory and unzip it
-   ```
-   mv <file_name>.zip ~/yolov5
-   cd yolov5
-   unzip <file_name>.zip
-   ```
- - You should now have the directory with all the data unzipped and ready to train
  ## Uploading to a bucket and downloading to the VM
    - Upload the zip file to a bucket in GCP (you can use the web interface or gsutil)
 
@@ -127,11 +102,11 @@ Typical workflow is:
    ```
    unzip <file_name>.zip
    ```
-   - You should now have the directory inside the yolov5 directory with all the data unzipped and ready to train
+   - You should now have all the data unzipped and ready to train
  
- The Vm is already set up with a virtual environment and the yolov5 project. Once logged into the machine, navigate to the yolov5 directory
 
- # Training
+ # Training yolov5
+ The Vm is already set up with a virtual environment and the yolov5 project. Once logged into the machine, navigate to the yolov5 directory
 
  once the dataset is uploaded, you can train
  
@@ -148,97 +123,6 @@ python train.py --weights yolov5s.pt --epochs <num_epochs> --data <your_data_dir
 ```
 -See the Ultralytics [yolov5](https://github.com/ultralytics/yolov5) github for more info on training
 
-# Creating this VM on GCP for training Yolov5
-
-1. Go to the GCP dashboard and select compute engine
-2. Select Create Instance
-3. Give it a name
-4. Select GPU's tab
-   - under GPU type, select NVIDIA T4
-   - Under number of GPUs, leave 1
-   - Under Machine type, select n1-standard-8
-
-![Alt text](<readme_images/Screenshot 2023-08-15 at 11.44.50 AM.png>)
-
-4. When you scroll down, you will see a grey dialog box that reads "The current selected image requires you to install NVIDIA CUDA stack manually ...etc"
-5. Click the switch image button
-   
-![Alt text](<readme_images/Screenshot 2023-08-15 at 11.45.07 AM.png>)
-
- - Operating system should be Deep Learning on Linux
- - Version Deep-Learning VM with CUDA 11.3 M110
- - Boot disk type SSD persistent
- - size 300GB
-![Alt text](<readme_images/Screenshot 2023-08-15 at 11.45.45 AM.png>)
-
-6. Click select
-
-7. Create the instance
-8. Once created, it should be listed under the VM's tab
-9. Use the dropdown to connect via SSH in browser
-    ![Alt text](<readme_images/Screenshot 2023-08-15 at 12.01.22 PM.png>)
-10. After you connect you should have a command line 
-11. Foollow the termina instructions and install the nvidia drivers
-12. Next, install anaconda 
-    ```
-    curl -O https://repo.anaconda.com/archive/Anaconda3-2020.11-Linux-x86_64.sh
-
-    ```
-    ```
-    bash Anaconda3-2020.11-Linux-x86_64.sh
-    ```
-   - You will have to hit enter and read through the TOS and agree, just follow the terminal prompts and use the default paths
-   - When asked if you want to initalize anaconda, type yes
-   - Conda should now be active , check by entering 
-  ``` conda --version```
-
-Optionally, install nano for easier text editing, you can use the built in vim editor if you want
-```
- sudo apt install nano
-```
-
-13.  Next, clone the yolov5 repo
-```
-   git clone https://github.com/ultralytics/yolov5.git
-```
-14.  Create a virtual environment with conda
-```
-   conda create -n yolo python=3.8
-```
-
-- After a moment you will be asked to install a bunch of packages, enter y
-15.   enter the yolov5 directory
-```
-    cd yolov5
-```
-16. modify the requirements.txt file
-```
-sudo nano requirements.txt
-```
-   - Comment out the torch and torchvision lines with a #
-   - Save and exit (in nano its shift + o, enter, shift+x)
-17. Activate the Virtual environment
-```
-conda activate yolo
-```
-18. Install dependencies
-```
-pip install -r requirements.txt
-```
-19. Now we need to install the correct versions of torch and torchvision. 
-   ```
-pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117
-   ```
- 20. Export the CUDA path (needs to be on one line in the terminal)
-```
-export PATH=/usr/local/cuda-11.0/bin${PATH:+:${PATH}}
-
-```
-Same here
-```
-export LD_LIBRARY_PATH=/usr/local/cuda-11.0/lib64/{LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-```
-And thats it!
 
 # Utility Scripts
    There are a number of utility scripts in the utility_scripts directory to help with data auditing and other things

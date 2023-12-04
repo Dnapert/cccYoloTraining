@@ -125,14 +125,12 @@ class DatasetBuilder:
         file_name = f'{self.directory}/{self.name}_combined.json'
         with open(file_name, 'w') as f:
             json.dump(combined_data, f, indent=4)
-        self.update_config(file_name, None, None)
-        self.annotations = file_name
         print(f"Combined annotations saved to {file_name}")
         class_dict = get_class_dict(file_name,False)
         os.makedirs(f'{self.directory}/figures', exist_ok=True)
-        with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
-            json.dump(class_dict, f, indent=4)
-        labels_per_class(f"{self.directory}/figures",file_name)
+        labels=labels_per_class(f"{self.directory}/figures",file_name)
+        self.update_config(annotations=file_name,class_dict=class_dict,labels_per_class=labels,combined_with=annotation_file2,original_annotations=self.annotations)
+        self.annotations = file_name
 
     def update_config(self,**kwargs)-> None:
         '''
@@ -169,7 +167,7 @@ class DatasetBuilder:
                 # Calculate the new height based on the target width and aspect ratio
                 target_height = int(target_width / aspect_ratio)
                 if target_width >= width:
-                    print(f'Warning: {filename} is already the same size or smaller than the target width of {target_width}')
+                    print(f'Image: {filename} is already the same size or smaller than the target width of {target_width}')
                     # move the image to the output directory
                     shutil.move(os.path.join(self.images,filename), output_dir)
                     continue
@@ -210,13 +208,6 @@ class DatasetBuilder:
         for i in  annotations['categories']:
             class_dict[i['id']] = i['name']
 
-        # write  to yaml file
-        with open(f"{output_file.split('.')[0]}.yaml","w") as f:
-            f.write("train: train/images\n")
-            f.write("test: test/images \n")
-            f.write("val: val/images\n")
-            f.write(f"nc: {len(class_dict)}\n")
-            f.write(f"names: {list(class_dict.values())}")
 
         # Create a mapping from class_name to a new id
         class_to_new_id = {class_name: new_id for new_id, class_name in enumerate(class_dict.values())}
@@ -336,17 +327,16 @@ class DatasetBuilder:
     
     def data_yaml_file(self):
         '''
-        Creates a data.yaml file for use with YOLOv5.
+        Creates a data.yaml file for use with YOLOv5 and v8.
         '''
         with open(self.annotations, 'r') as f:
             data = json.load(f)
-        class_dict = {category['id']: category['name'] for category in data['categories']}
-        with open(f"{self.directory}/{self.name}.yaml","w") as f:
+        with open(f"{self.directory}/data/data.yaml","w") as f:
             f.write("train: train/images\n")
             f.write("test: test/images \n")
             f.write("val: val/images\n")
-            f.write(f"nc: {len(class_dict)}\n")
-            f.write(f"names: {list(class_dict.values())}")
+            f.write(f"nc: {len(self.class_dict)}\n")
+            f.write(f"names: {list(self.class_dict.values())}")
         print(f'Created data.yaml file for {self.name}')
     def to_yolo(self):
         '''
@@ -414,7 +404,7 @@ class DatasetBuilder:
                     for i in range(len(bboxes)):
                         line = *(bboxes[i]),  # cls, box or segments
                         file.write(('%g ' * len(line)).rstrip() % line + '\n')
-        self.data_yaml_file() 
+        
    
     def split_indices(self,x, train, test, validate):
         '''
@@ -441,7 +431,7 @@ class DatasetBuilder:
         
         print(len(files))
         if seed == None:
-            seed = datetime.now()
+            seed = 42
         random.Random(seed).shuffle(files)
         self.update_config(annotations=self.annotations, images=self.images, seed=seed)
         i, j, k = self.split_indices(files, train, test, validate)
@@ -455,23 +445,22 @@ class DatasetBuilder:
                 shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
                 shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
         print('done')
-        for key in datasets:
-            dir = f'{output_dir}/{key}/labels'
-            counts = self.output_num_labels(dir)
-            #sort the dictionary by key
-            counts = {k: v for k, v in sorted(counts.items(), key=lambda item: item[0])}
-            self.bar_graph(counts, output_dir, key)
-            print(key, counts)
+        for keys in datasets:
+            counts = self.output_num_labels(f'{output_dir}/{keys}/labels')
+            self.bar_graph(counts, output_dir, keys)
+            print(keys, counts)
+            
+        self.data_yaml_file()
     
-    def output_num_labels(self,directory):
+    def output_num_labels(self,file_dir):
         """
         outputs the number of labels per class in data set.
         """
-        files = os.listdir(directory)
+        files = os.listdir(file_dir)
         label_dict = {}
         for file in files:
             
-            with open(f'{directory}/{file}', 'r') as f:
+            with open(f'{file_dir}/{file}', 'r') as f:
                 lines = [line.rstrip('\n').split() for line in f]
                 for line in lines:
                     if(len(line) == 0) or len(line[0]) > 2:
@@ -481,15 +470,8 @@ class DatasetBuilder:
                     else:
                         label_dict[int(line[0])] += 1
         return label_dict
-    
     def bar_graph(self,label_dict, file_path, dataset_name):
-        '''
-        Creates a bar graph of the number of labels per class in a given YOLO dataset.
-        params:
-        label_dict: dictionary of labels and counts
-        file_path: path to save the figure
-        dataset_name: name of the dataset
-        '''
+    
         labels, values = zip(*sorted(label_dict.items()))
         indexes = np.arange(len(labels))
         width = .8
@@ -501,3 +483,23 @@ class DatasetBuilder:
         os.makedirs(f'{file_path}/figures', exist_ok=True)
         plt.savefig(f'{file_path}/figures/{dataset_name}.png')
         plt.close()
+    def get_class_dict(self,annotation_file,write:bool)->dict:
+        '''
+        reads a json annotation file and returns a dictionary of class_id's and class_names
+        optionally writes the dictionary to a json file with the name <annotation_file>.json
+        '''
+        class_dict = {}
+        with open(annotation_file, 'r') as f:
+            data = json.load(f)
+        for i in  data['categories']:
+            class_dict[i['id']] = i['name']
+        #print(class_dict)
+        #split file name and extension
+        if write:
+            annotation_file = annotation_file.split('/',1)[-1]
+            annotation_file = annotation_file.split('.',1)[0]
+            annotation_file +='_dict.json'
+            with open(annotation_file, 'w') as f:
+                json.dump(class_dict, f, indent=4)
+            print(f'Class dict written to {annotation_file}')
+        return class_dict

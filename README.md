@@ -26,20 +26,27 @@ cd <path_to_this_project>
 pip install -r requirements.txt
 ```
 # Basic workflow for training
-1. put all your images in a directory named images
-2. remove any classes you don't want to train on from the annotations
-3. resize all images to 640 width
-4. optionally do any augmentation you want
-5. convert the coco annotations to yolo format
-6. split the data into train, val, and test sets
-7. upload the data to the VM
-8. train
+Using the dataset_builder class, modify the main.py script to build/modify/export the dataset for training.
+Typical workflow is:
+- In the main.py file, fill in the constructor with your data
+   ```
+      new_dataset = DatasetBuilder(project_name='demo_2',annotations='annotations/original_annotations.json',images='images/resized_images')
+   ```
+- This will create a new project folder, if it is a new project, or it will read the config file from the given project name's directory
+- If it's a new project, it will create a folder under experiments directory, and create a config file for the project
+- After the script runs, simply keep the constuctor the same, and perform the operations needed and run it again
+```python
+   new_dataset = DatasetBuilder(project_name='demo_2',annotations='annotations/original_annotations.json',images='images/resized_images')
+
+   new_dataset.combine('annotations/12-1-23.json')
+   new_dataset.remove_classes([1,2,3])
+   new_dataset.resize_images(640)
+   new_dataset.augment_classes({2:3,4:5})
+   new_dataset.to_yolo()
+   new_dataset.split(.8,.1,.1,seed=42)
+```
    
-# !! Important Notes, READ THIS !!
-   - We train on 640x480 images, so before augmenting, make sure all images are that size. The resize.py script will do this for you. This also speeds up the augmentation process.
-   - Look at the class_id's in any new json annotation file, sometimes when exporting an annotated dataset from CVAT, the class_id's will be 1 indexed. A quick way to check is to use the get_class_dict.py script, they need to be 0 indexed. If this is the case use the remap_classes.py script to remap the class_id's to be 0 indexed.
-   - If you remove classes from the dataset, make sure to remap the class_id's to be 0 indexed, and have no missing indices,otherwise the training could fail.
-   - The image names in the annotations should just be the name, not paths with slashes, i.e. /path/to/image.jpg, it should just be image.jpg. To remove leading slashes from the image names in the annotations, use the split_image_names.py script.
+
 ## Data Augmentation Scripts
 
 

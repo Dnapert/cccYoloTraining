@@ -1,6 +1,9 @@
 import json
 
 def add_key(annotation,output):
+    '''
+    Adds file name key to annotations file if missing
+    '''
     image_dict = {}
     with open(annotation, 'r') as f:
         data = json.load(f)

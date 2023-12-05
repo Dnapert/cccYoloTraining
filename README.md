@@ -11,13 +11,13 @@ Contents:
     - [augment\_classes.py](#augment_classespy)
     - [split\_data.py](#split_datapy)
     - [resize.py](#resizepy)
-- [Uploading the Data](#uploading-the-data)
-- [HELP: I can't enter the yolov5 directory!](#help-i-cant-enter-the-yolov5-directory)
+    - [combine\_datassets.py](#combine_datassetspy)
+    - [auto\_map\_classes.py](#auto_map_classespy)
+
   - [Uploading the dataset](#uploading-the-dataset)
-  - [Uploading directly to the VM](#uploading-directly-to-the-vm)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
 - [Training Yolov5](#training-yolov5)
-- [Utility Scripts](#utility-scripts)
+- [Misc. Scripts](#misc-scripts)
 ```
 conda create -n <env_name> 
 conda activate <env_name>
@@ -31,23 +31,37 @@ The main.py cli app works as an interface for the dataset_builder.py module.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
 # A note on Image sets
-Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. If you get a permissions error, run 
+Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. 
+```
+./flatten_image_dirs.sh
+```
+If you get a permissions error, run 
 ```
 chmod +x flatten_image_dirs.sh
 ```
-Another small hiccup, ensure all the images have the same extension. Some of our older datasets have a capitalized .JPG, modify and use the change_file_extension.sh script for this.This is also a handy template for making other changes to file names, so keep it in mind. Same deal with the permissions
+Another small hiccup, ensure all the images have the same extension. Some of our older datasets have a capitalized .JPG, modify and use the change_file_extension.sh script for this.This is also a handy template for making other changes to file names, so keep it in mind.
 ```
-chmod +x change_files_to_jpg.sh
+./change_file_extension.sh
+```
+ Same deal with the permissions
+```
+chmod +x change_file_extension.sh
 ```
 
 ## Data Augmentation Scripts
-There are a host of data augmentations scripts in the utility_scripts directory. If you want to perdform single operations on a dataset, look there. Here's a list of some of the available scripts.
+There are a host of data augmentations scripts in the utility_scripts directory. If you want to perform single operations on a dataset, look there. Here's a list of some of the available scripts.
+Always check the script for defaults and usage! There is no undo button!
 ### coco2yolo.py
 
  - Converts COCO annotations to YOLO format
 - Usage: `python coco2yolo.py --dir <directory to save annoations> --annotation_file <json annotations file> `
 
-  
+
+### auto_map_classes.py
+- given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
+- returns a dictionary of class_id's and class_names
+    outputs a data.yaml file for use with yolov5 and v8 with the class name list and number of classes
+- Usage: `python auto_map_classes.py --annotations_path <path to annotations> --write <boolean to write the class dictionary to a file> `
 ### remove_classes.py
 - Removes all instances of specified classes from a COCO JSON annotation file
 - Usage:`python remove_classes.py --annotations_path <path to annotations> --output_file <path to output annotations> --classes <list of classes to remove sperated by space 1 2 3 etc. >`
@@ -57,6 +71,10 @@ There are a host of data augmentations scripts in the utility_scripts directory.
   and adds specified number of annotations to those new augmented images. 
 - Please see the script for defaults and usage
 - Usage:`python augment_classes.py --annotations_path <path_to_annotations> --image_folder <path_to_original_images> --output_folder <path_to_new_augmented_images> --augment_categories <string list of id's and number of augmentations to add to each id '0,2 1,3' etc.> `
+
+### combine_datasets.py
+- given two json annotation files, combines them, creating consistent class_id's and a single annotation file.
+- Usage: `python combine_datassets.py --annotations1 <path_to_annotations1> --annotations2 <path_to_annotations2>`
 
 ### split_data.py
 - Splits a dataset into train, val and test sets
@@ -124,7 +142,7 @@ python train.py --weights yolov5s.pt --epochs <num_epochs> --data <your_data_dir
 -See the Ultralytics [yolov5](https://github.com/ultralytics/yolov5) github for more info on training
 
 
-# Utility Scripts
+# Misc. scripts
    There are a number of utility scripts in the utility_scripts directory to help with data auditing and other things
 
    - count_annotations.py :
@@ -145,6 +163,3 @@ python train.py --weights yolov5s.pt --epochs <num_epochs> --data <your_data_dir
        - outputs a graph of number of labels per class in an annotation file
    - get_class_dict.py
        - outputs a dictionary of class names and their corresponding category_id from a json annotation file
-   - remap_classes.py
-       - remaps the category_id's in a json annotation file to be 0 indexed
-       - also easily modified to remap to any index if you've removed classes from the dataset (it is necessary to have the category_id's be 0 indexed for training and not have missing indices)

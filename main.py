@@ -2,7 +2,7 @@ from dataset_builder import DatasetBuilder
 import argparse
 import os
 
-con = True
+run = True
 def get_input(input_phrase):
     print(input_phrase)
     path = input()
@@ -41,7 +41,7 @@ def exit():
 
 def main():
   
-    while con:
+    while run:
         print('Welcome to the dataset builder!\n At any time, you can quit by typing "q" or "quit"')
         name = get_input("Enter the project name you would like to create, or the name of an existing project:")
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Define the directory to search in
+# Define the directory to search and the file extension to search for
 search_dir="images"
 search_extension="JPG"
 

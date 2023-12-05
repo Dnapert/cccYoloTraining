@@ -1,11 +1,14 @@
-# Collection of all our training data and Data augmentation code
+# Collection of all our training data prep code
 
 Contents:
 
-- [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-and-data-augmentation-code)
-- [Basic workflow for training](#basic-workflow-for-training)
-  - [Data Augmentation Scripts](#data-augmentation-scripts)
+- [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-prep-code)
+- [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
+  - [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
+  - [What the cli does](#what-the-cli-does)
   - [A note on image sets](#a-note-on-image-sets)
+  - [Be mindful of memory usage](#be-mindful-of-memory-usage)
+  - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
@@ -13,23 +16,49 @@ Contents:
     - [resize.py](#resizepy)
     - [combine\_datassets.py](#combine_datassetspy)
     - [auto\_map\_classes.py](#auto_map_classespy)
-
   - [Uploading the dataset](#uploading-the-dataset)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
 - [Training Yolov5](#training-yolov5)
 - [Misc. Scripts](#misc-scripts)
+
+If working on the VM, make sure to activate the yolo environment
+```
+conda activate yolo
+```
+If you're working on a different machine, you'll need to create a new environment and install the requirements
 ```
 conda create -n <env_name> 
 conda activate <env_name>
 cd <path_to_this_project>
 pip install -r requirements.txt
 ```
-# Basic workflow for training
+# Basic workflow for dataset creation
 Create an images directory, and put all of your images there.
-Add your annotations to the annotations directory, doesn't need to be here, but that's what I do.
-The main.py cli app works as an interface for the dataset_builder.py module.
+Add your annotations to the annotations directory.
+If the experiment directory doesn't exist, create it.
+```
+mkdir experiments
+```
+The main.py cli app works as an interface for the dataset_builder class.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
+
+# Copying the dataset to the VM from a bucket
+```
+gsutil cp gs://<bucket_name>/<file_name>.zip 
+```
+
+### What the cli does
+- Creates a dataset_builder class
+- Given the name of an existing project, the config file is loaded and the dataset_builder is initialized with the project's config
+- Given a new project name, creates a new project directory under the experiments directory with the name you provide
+- Creates and maintains a config file for the project
+
+- *The config file*:
+     - The config file is like the history of your project, it keeps track of the images and annotations you've added to the dataset, and the data augmentation operations you've performed, and allows you to pick up where you left off, or make changes to the dataset.
+      - The config file is a json file, and is created in the project directory when you create a new project.
+      - You can manually edit the config file BEFORE you run the cli, but it's best to let the cli handle it.
+ 
 # A note on Image sets
 Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. 
 ```
@@ -47,6 +76,22 @@ Another small hiccup, ensure all the images have the same extension. Some of our
 ```
 chmod +x change_file_extension.sh
 ```
+# Be mindful of memory usage
+ Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory, and if you're not careful, you can run out of memory and crash the VM. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
+
+ zip the dataset directory
+ ```
+ zip -r <new_name> <data_dir>
+ ```
+ 
+ copy the zip file to a bucket
+  ```
+  gsutil cp <file_name>.zip gs://<bucket_name>
+  ```
+  remove the dataset from the VM
+  ```
+  rm -r <data_dir>
+  ```
 
 ## Data Augmentation Scripts
 There are a host of data augmentations scripts in the utility_scripts directory. If you want to perform single operations on a dataset, look there. Here's a list of some of the available scripts.

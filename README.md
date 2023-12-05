@@ -55,7 +55,7 @@ gsutil cp gs://<bucket_name>/<file_name>.zip
 - Creates and maintains a config file for the project
 
 - *The config file*:
-     - The config file is like the history of your project, it keeps track of the images and annotations you've added to the dataset, and the data augmentation operations you've performed, and allows you to pick up where you left off, or make changes to the dataset.
+     - The config file is like the state management and history of your project, it keeps track of the images and annotations you've added to the dataset, and the data augmentation operations you've performed, and allows you to pick up where you left off, or make changes to the dataset.
       - The config file is a json file, and is created in the project directory when you create a new project.
       - You can manually edit the config file BEFORE you run the cli, but it's best to let the cli handle it.
  

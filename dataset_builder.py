@@ -131,6 +131,8 @@ class DatasetBuilder:
         labels=labels_per_class(f"{self.directory}/figures",file_name)
         self.update_config(annotations=file_name,class_dict=class_dict,labels_per_class=labels,combined_with=annotation_file2,original_annotations=self.annotations)
         self.annotations = file_name
+        self.class_dict = class_dict
+        self.labels_per_class = labels
 
     def update_config(self,**kwargs)-> None:
         '''
@@ -229,6 +231,7 @@ class DatasetBuilder:
         label_dict = labels_per_class(f"{self.directory}/figures",output_file)
         self.update_config(annotations = output_file,class_dict=class_dict,labels_per_class=label_dict)
         self.annotations = output_file
+        self.class_dict = class_dict
         print(f"Annotations saved to {output_file}")
         os.makedirs(f'{self.directory}/figures', exist_ok=True)
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:

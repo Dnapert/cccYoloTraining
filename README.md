@@ -2,24 +2,26 @@
 
 Contents:
 
-- [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-prep-code)
+- [Collection of all our training data prep code](#collection-of-all-our-training-data-prep-code)
 - [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
-  - [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
-  - [What the cli does](#what-the-cli-does)
-  - [A note on image sets](#a-note-on-image-sets)
-  - [Be mindful of memory usage](#be-mindful-of-memory-usage)
+- [The Dataset Builder Class](#the-dataset-builder-class)
+- [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
+    - [What the cli does](#what-the-cli-does)
+- [A note on Image sets](#a-note-on-image-sets)
+- [Be mindful of memory usage](#be-mindful-of-memory-usage)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
+    - [auto\_map\_classes.py](#auto_map_classespy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
+    - [combine\_datasets.py](#combine_datasetspy)
     - [split\_data.py](#split_datapy)
     - [resize.py](#resizepy)
-    - [combine\_datassets.py](#combine_datassetspy)
-    - [auto\_map\_classes.py](#auto_map_classespy)
+- [Uploading the Data to the VM](#uploading-the-data-to-the-vm)
   - [Uploading the dataset](#uploading-the-dataset)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
-- [Training Yolov5](#training-yolov5)
-- [Misc. Scripts](#misc-scripts)
+- [Training yolov5](#training-yolov5)
+- [Misc. scripts](#misc-scripts)
 
 If working on the VM, make sure to activate the yolo environment
 ```
@@ -43,13 +45,23 @@ The main.py cli app works as an interface for the dataset_builder class.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
 
+# The Dataset Builder Class
+The dataset_builder.py file contains the dataset_builder class, which is the main class for creating and modifying datasets. There is a bit too much to cover here, but main things to know are:
+- The dataset_builder class is initialized with a name, a coco json annotation file, and a directory of images.
+- You can combine other datasets 
+- Remove classes
+- Augment images 
+- Convert annotations to yolo format
+- Split the dataset into train, val, and test sets
+  
+
 # Copying the dataset to the VM from a bucket
 ```
 gsutil cp gs://<bucket_name>/<file_name>.zip 
 ```
 
 ### What the cli does
-- Creates a dataset_builder class
+- Creates a dataset_builder class instance
 - Given the name of an existing project, the config file is loaded and the dataset_builder is initialized with the project's config
 - Given a new project name, creates a new project directory under the experiments directory with the name you provide
 - Creates and maintains a config file for the project
@@ -60,7 +72,7 @@ gsutil cp gs://<bucket_name>/<file_name>.zip
       - You can manually edit the config file BEFORE you run the cli, but it's best to let the cli handle it.
  
 # A note on Image sets
-Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. 
+Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. Make sure to edit the script to point to the correct directory. Then run the script
 ```
 ./flatten_image_dirs.sh
 ```
@@ -77,7 +89,7 @@ Another small hiccup, ensure all the images have the same extension. Some of our
 chmod +x change_file_extension.sh
 ```
 # Be mindful of memory usage
- Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory, and if you're not careful, you can run out of memory and crash the VM. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
+ Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
 
  zip the dataset directory
  ```

@@ -28,14 +28,26 @@ class DatasetBuilder:
         self.annotations = annotations
         self.images = images
         self.config_file = f'{self.directory}/config.json'
-        # holy constructor batman! 
-        # check if the given project directory exists  
+        self.class_dict = {}
+
+        self.new = self.check_project_exists()
+        if not self.new:
+            self.check_annotations_exists()
+        self.check_images_exist()
+        if self.new:
+            self.copy_images()
+        
+    def check_project_exists(self) -> bool:
+        '''
+        check if the project already exists and if so , load the config file
+        '''
         if not os.path.exists(self.directory) or not os.path.isdir(self.directory):
             print(f'Creating new project folder {self.directory}')
             os.mkdir(self.directory)
             class_dict = get_class_dict(self.annotations,False)
             labels = labels_per_class(f"{self.directory}/figures",self.annotations)
             self.class_dict = class_dict
+            self.copy_annotations()
             with open(self.config_file, 'w') as f:
                 json.dump({'name': self.name, 
                            'annotations': self.annotations, 
@@ -43,6 +55,7 @@ class DatasetBuilder:
                            'class_dict': class_dict,
                             'labels_per_class': labels
                            }, f, indent=4)
+            return True
         else:
             # load the config file
             with open(self.config_file, 'r+') as f:
@@ -51,13 +64,45 @@ class DatasetBuilder:
                     setattr(self, arg, data[arg])
 
                 print(data)
-
-            print(f'{self.directory} already exists, assuming this is an existing project')
-        # check if the given annotations file exists
+            print(f'{self.directory} already exists, attempting to load config file...')
+            return False
+    def copy_images(self):
+        '''
+        copy the images to the project folder
+        '''
+        print(f'Copying images from {self.images} to {self.directory}')
+        if not os.path.exists(f'{self.directory}/images'):
+            shutil.copytree(self.images, f'{self.directory}/images')
+            self.images = f'{self.directory}/images'
+        else:
+            print(f'Images already exist in {self.directory}')
+    def copy_annotations(self):
+        '''
+        copy the annotations file to the project folder
+        '''
+        print(f'Copying {self.annotations} to {self.directory}')
+        name = self.annotations.split('/')[-1]
+        if not os.path.isfile(f'{self.directory}/{name}'):
+            shutil.copy(self.annotations,f'{self.directory}/{name}')
+            self.annotations = f'{self.directory}/{name}'
+        else:
+            print(f'Annotations file {self.annotations} already exists in {self.directory}')
+    def check_annotations_exists(self) -> None:
+        '''
+        check to see if the given annoations and image directory exist, and if so, copy the annotation file to the experiment folder
+        '''
         if not os.path.exists(self.annotations) or not os.path.isfile(self.annotations):
             print(f'Error: {self.annotations} does not exist, please check the path and try again, program exiting')
-            sys.exit()
+            
+        else:
+            print(f'Found annotations file {self.annotations}')
+            self.copy_annotations()
         # check if the given images directory exists
+
+    def check_images_exist(self):
+        '''
+        check to see if the given image directory exists
+        '''
         if not os.path.exists(self.images) or not os.path.isdir(self.images):
             print(f'Error: {self.images} does not exist, please check the path and try again, program exiting')
             sys.exit()
@@ -68,7 +113,8 @@ class DatasetBuilder:
             num_images = len(os.listdir(f"{self.directory}/resized_images"))
             print(f'Found folder with {num_images} resized images')
             self.images = f'{self.directory}/resized_images'
-   
+
+
     def combine_datasets(self, annotation_file2)-> None:
         '''
         Reads two JSON annotation files and merges them with consistent class IDs and names.
@@ -88,7 +134,7 @@ class DatasetBuilder:
     
         class_to_new_id = {name: i for i, name in enumerate(all_classes)}
 
-        def update_annotations(annotations, class_dict):
+        def update_annotations(annotations, class_dict) -> list:
             for annotation in annotations:
                 class_name = class_dict.get(annotation['category_id'])
                 if class_name in class_to_new_id:
@@ -177,14 +223,26 @@ class DatasetBuilder:
                 cv2.imwrite(os.path.join(output_dir,filename), image)
             self.update_config(annotaions = self.annotations, images = output_dir)
             self.images = output_dir
-    
-    def remove_classes(self,classes_to_remove):
+
+    def add_filename_key(self,annotation) -> None:
+        '''
+        Adds filename key to annotations file if missing
+        '''
+        image_dict = {}
+        with open(annotation, 'r') as f:
+            data = json.load(f)
+        for i in data['images']:
+            image_dict[i['id']] = i['file_name']
+        for a in data['annotations']:
+            if not 'file_name' in a:
+                a['file_name'] = image_dict[a['image_id']]
+        with open(annotation, 'w') as f:
+            json.dump(data, f, indent=4)
+
+    def remove_classes(self,classes_to_remove) -> None:
         """
         Remove classes from annotations file remaps class ids, and creates a yaml file for yolo training
-        :param annotations_path: Path to annotations file
         :param classes_to_remove: List of classes to remove
-        :param output_file: Path to output file
-        :return: None
         """
         output_file = f'{self.directory}/{self.name}_removed.json'
         with open(self.annotations, 'r') as f:
@@ -237,6 +295,44 @@ class DatasetBuilder:
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)
 
+    def remap_classes_to_zero_index(self,annotation_file,overwrite)->dict:
+        '''
+        given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
+        returns a dictionary of class_id's and class_names
+        
+        '''
+        with open(annotation_file, 'r') as f:
+            data = json.load(f)
+
+        class_dict = self.get_class_dict(annotation_file, False)
+
+        class_to_new_id = {class_name: new_id for new_id, class_name in enumerate(class_dict.values())}
+        #print(class_to_new_id)
+        for category in data['categories']:
+            category['id'] = class_to_new_id[category['name']]
+
+        for annotation in data['annotations']:
+        
+            original_class_name = class_dict[annotation['category_id']]
+            annotation['category_id'] = class_to_new_id[original_class_name]    
+        file_name = f'{self.directory}/{annotation_file}'
+        if not os.path.exists(file_name):
+            self.write_json_file(data, file_name)
+        else:
+            if overwrite:
+                os.remove(file_name)
+                self.write_json_file(data, file_name)
+            else:
+                file_name = file_name.split('.', 1)[0] + '_remapped.json'
+                self.write_json_file(data, file_name)
+        return class_to_new_id
+    
+    def write_json_file(data, file_name):
+        '''
+        writes a json file to the given file name
+        '''
+        with open(file_name, 'w') as f:
+            json.dump(data, f, indent=4)
 
     def augment_classes(self,augmentations):
         '''
@@ -297,7 +393,7 @@ class DatasetBuilder:
                         new_id = int(''.join(random.choices(string.digits, k=16)))
                         res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
                         version = res
-                        new_file_name = augment_and_save_image(image, file_name, self.name, version)
+                        new_file_name = augment_and_save_image(image, file_name, self.images, version)
 
                         new_annotation['file_name'] = new_file_name
                         new_annotation['image_id'] = new_id
@@ -324,6 +420,8 @@ class DatasetBuilder:
         self.update_config(annotations=updated_annotations_file, class_dict=class_dict)
         print(f'Annotations saved to {updated_annotations_file}')
         class_dict = get_class_dict(updated_annotations_file,False)
+        self.class_dict = class_dict
+        self.annotations = updated_annotations_file
         os.makedirs(f'{self.directory}/figures', exist_ok=True)
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)
@@ -341,6 +439,7 @@ class DatasetBuilder:
             f.write(f"nc: {len(self.class_dict)}\n")
             f.write(f"names: {list(self.class_dict.values())}")
         print(f'Created data.yaml file for {self.name}')
+
     def to_yolo(self):
         '''
         Converts COCO annotations to YOLO format, compatible with v5 and v8.
@@ -486,6 +585,13 @@ class DatasetBuilder:
         os.makedirs(f'{file_path}/figures', exist_ok=True)
         plt.savefig(f'{file_path}/figures/{dataset_name}.png')
         plt.close()
+
+    def load_annotation_file(self,annotation_file):
+        if not os.path.exists(annotation_file):
+            print(f'Did not find {annotation_file}')
+        else:
+            self.remap_classes_zero_index(annotation_file)
+            self.add_filename_key(annotation_file)
     def get_class_dict(self,annotation_file,write:bool)->dict:
         '''
         reads a json annotation file and returns a dictionary of class_id's and class_names

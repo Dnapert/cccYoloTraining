@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Define the directory to search in
+# Define the directory to search in and the file type
 search_dir="2"
 search_pattern="*.jpg"
 

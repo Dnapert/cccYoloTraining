@@ -2,24 +2,30 @@
 
 Contents:
 
-- [Collection of all our training data and Data augmentation code](#collection-of-all-our-training-data-prep-code)
+- [Collection of all our training data prep code](#collection-of-all-our-training-data-prep-code)
 - [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
-  - [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
-  - [What the cli does](#what-the-cli-does)
-  - [A note on image sets](#a-note-on-image-sets)
-  - [Be mindful of memory usage](#be-mindful-of-memory-usage)
+- [Order of operations](#order-of-operations)
+- [Checklist](#checklist)
+- [The Dataset Builder Class](#the-dataset-builder-class)
+- [What the cli does](#what-the-cli-does)
+- [A note on Image sets](#a-note-on-image-sets)
+    - [File extensions](#file-extensions)
+- [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
+- [Be mindful of memory usage](#be-mindful-of-memory-usage)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
+    - [add\_filename\_key.py](#add_filename_keypy)
+    - [auto\_map\_classes.py](#auto_map_classespy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
+    - [combine\_datasets.py](#combine_datasetspy)
     - [split\_data.py](#split_datapy)
     - [resize.py](#resizepy)
-    - [combine\_datassets.py](#combine_datassetspy)
-    - [auto\_map\_classes.py](#auto_map_classespy)
+- [Uploading the Data to the VM](#uploading-the-data-to-the-vm)
   - [Uploading the dataset](#uploading-the-dataset)
   - [Uploading to a bucket and downloading to the VM](#uploading-to-a-bucket-and-downloading-to-the-vm)
-- [Training Yolov5](#training-yolov5)
-- [Misc. Scripts](#misc-scripts)
+- [Training yolov5](#training-yolov5)
+- [Misc. scripts](#misc-scripts)
 
 If working on the VM, make sure to activate the yolo environment
 ```
@@ -33,23 +39,63 @@ cd <path_to_this_project>
 pip install -r requirements.txt
 ```
 # Basic workflow for dataset creation
-Create an images directory, and put all of your images there.
-Add your annotations to the annotations directory.
-If the experiment directory doesn't exist, create it.
-```
-mkdir experiments
-```
-The main.py cli app works as an interface for the dataset_builder class.
+- Create an `images` directory, and put all of your images there.
+   - If your image directory contains nested folders, use the flatten_image_dirs.sh script to flatten the directory [A note on Image sets](#a-note-on-image-sets).
+- Create an `annotations` directory, and put all of your annotations there.
+
+  - If these are new annotations from CVAT, make sure they are 0 indexed. If not using the [main.py](#what-the-cli-does) cli, or the [dataset builder](#the-dataset-builder-class) class, Use the auto_map_classes.py script to do this. See [Data Augmentation Scripts](#data-augmentation-scripts).
+
+- Make sure all the images have the same extension [File extensions](#file-extensions)
+  
+# Order of operations
+The order of operations is important, and it's best to follow this order when creating a new dataset if not using the cli.
+- Create the images and annotations directories if they don't exist
+- Add your images to the images directory
+- Add your annotations to the annotations directory
+- Flatten the images directory if needed
+- Ensure all the images have the same extension [File extensions](#file-extensions)
+- Make sure the annoations are 0 indexed [Data Augmentation Scripts](#data-augmentation-scripts)
+- Resize the images if needed
+- Remove any classes if needed
+- Perform any augmentations
+- Convert to yolo format
+- Split the dataset into train, val, and test sets
+
+# Checklist
+This is a checklist of things to do when creating a new dataset. If you're using the cli, you can skip most of these steps, but it's good to know what's going on under the hood.
+- [ ] Are ALL the images in the `images` directory?
+- [ ] Is the image directory flattened?
+- [ ] Are the annotations in the `annotations` directory?
+- [ ] Are the annotations 0 indexed? 
+- [ ] Is there a `filename` key in the `annotations` of the annotation file?
+- [ ] Are the file paths in the annotations flattened?
+- [ ] Do all the images have the same extension?
+- [ ] Did you resize the images?
+- [ ] Did you remove any classes?
+- [ ] Did you perform any augmentations?
+- [ ] Did you convert to yolo format?
+- [ ] Is there a data.yaml file in the converted data directory with the correct number of classes and the class names list?
+- [ ] Did you split the dataset into train, val, and test sets?
+
+
+The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class. Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
 
-# Copying the dataset to the VM from a bucket
-```
-gsutil cp gs://<bucket_name>/<file_name>.zip 
-```
+# The Dataset Builder Class
+The dataset_builder.py file contains the dataset_builder class, which is the main class for creating and modifying datasets. There is a bit too much to cover here, but main things to know are:
+- The dataset_builder class is initialized with a name, a coco json annotation file, and a directory of images.
+- You can combine other datasets 
+- Remove classes
+- Augment images 
+- Convert annotations to yolo format
+- Split the dataset into train, test, and val sets
+- The class created and maintains a config file for the project, this is where the state of the dataset is stored, and is used to pick up where you left off, or make changes to the dataset. Once you have a dataset, you can use the cli to add to it, or modify it. Be careful when manually editing the config file, it's best to let the cli handle it.
+  
 
-### What the cli does
-- Creates a dataset_builder class
+
+# What the cli does
+- Really, the cli is just an interface for the dataset_builder class, and is a bit easier to use than the class itself, since it ensures the correct order of operations.
 - Given the name of an existing project, the config file is loaded and the dataset_builder is initialized with the project's config
 - Given a new project name, creates a new project directory under the experiments directory with the name you provide
 - Creates and maintains a config file for the project
@@ -60,7 +106,7 @@ gsutil cp gs://<bucket_name>/<file_name>.zip
       - You can manually edit the config file BEFORE you run the cli, but it's best to let the cli handle it.
  
 # A note on Image sets
-Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. 
+Sometimes, the datasets exported from CVAT have nested folders, and we need all our images in one directory to work with the scripts here. Edit the flatten_image_dirs.sh script to quickly flatten a folder of images that contains nested folders. Make sure to edit the script to point to the correct directory. Then run the script
 ```
 ./flatten_image_dirs.sh
 ```
@@ -68,6 +114,8 @@ If you get a permissions error, run
 ```
 chmod +x flatten_image_dirs.sh
 ```
+
+### File extensions
 Another small hiccup, ensure all the images have the same extension. Some of our older datasets have a capitalized .JPG, modify and use the change_file_extension.sh script for this.This is also a handy template for making other changes to file names, so keep it in mind.
 ```
 ./change_file_extension.sh
@@ -76,8 +124,13 @@ Another small hiccup, ensure all the images have the same extension. Some of our
 ```
 chmod +x change_file_extension.sh
 ```
+# Copying the dataset to the VM from a bucket
+```
+gsutil cp gs://<bucket_name>/<file_name>.zip 
+```
+
 # Be mindful of memory usage
- Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory, and if you're not careful, you can run out of memory and crash the VM. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
+ Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
 
  zip the dataset directory
  ```
@@ -101,6 +154,8 @@ Always check the script for defaults and usage! There is no undo button!
  - Converts COCO annotations to YOLO format
 - Usage: `python coco2yolo.py --dir <directory to save annoations> --annotation_file <json annotations file> `
 
+### add_filename_key.py
+- Adds a filename key to the annotations in a coco json file
 
 ### auto_map_classes.py
 - given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
@@ -136,7 +191,7 @@ Always check the script for defaults and usage! There is no undo button!
 
 If you didn't use the main.py cli to generate your dataset, make sure to check some things before you proceed.
 
-Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the data.yaml in the data directory as a template
+Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the example_data.yaml as a template. The cli and dataset_builder class will create this file for you, but if you're doing it manually, make sure it's correct.
 
  The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have the category_id 1, and so on.
 

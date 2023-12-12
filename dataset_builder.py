@@ -590,7 +590,7 @@ class DatasetBuilder:
         if not os.path.exists(annotation_file):
             print(f'Did not find {annotation_file}')
         else:
-            self.remap_classes_zero_index(annotation_file)
+            self.remap_classes_to_zero_index(annotation_file)
             self.add_filename_key(annotation_file)
     def get_class_dict(self,annotation_file,write:bool)->dict:
         '''

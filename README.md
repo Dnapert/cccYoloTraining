@@ -4,9 +4,12 @@ Contents:
 
 - [Collection of all our training data prep code](#collection-of-all-our-training-data-prep-code)
 - [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
+- [Order of operations](#order-of-operations)
+- [Checklist](#checklist)
 - [The Dataset Builder Class](#the-dataset-builder-class)
 - [What the cli does](#what-the-cli-does)
 - [A note on Image sets](#a-note-on-image-sets)
+    - [File extensions](#file-extensions)
 - [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
 - [Be mindful of memory usage](#be-mindful-of-memory-usage)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
@@ -44,6 +47,36 @@ pip install -r requirements.txt
 - Add your annotations to the annotations directory.
 If the `experiments` directory doesn't exist, create it.
 
+# Order of operations
+The order of operations is important, and it's best to follow this order when creating a new dataset if not using the cli.
+- Create the images and annotations directories if they don't exist
+- Add your images to the images directory
+- Add your annotations to the annotations directory
+- Flatten the images directory if needed
+- Ensure all the images have the same extension [File extensions](#file-extensions)
+- Make sure the annoations are 0 indexed [Data Augmentation Scripts](#data-augmentation-scripts)
+- Resize the images if needed
+- Remove any classes if needed
+- Perform any augmentations
+- Convert to yolo format
+- Split the dataset into train, val, and test sets
+
+# Checklist
+This is a checklist of things to do when creating a new dataset. If you're using the cli, you can skip most of these steps, but it's good to know what's going on under the hood.
+- [ ] Are ALL the images in the `images` directory?
+- [ ] Are the annotations in the `annotations` directory?
+- [ ] Are the annotations 0 indexed? 
+- [ ] Are the file paths in the annotations flattened?
+- [ ] Is the image directory flattened?
+- [ ] Do all the images have the same extension?
+- [ ] Did you resize the images?
+- [ ] Did you remove any classes?
+- [ ] Did you perform any augmentations?
+- [ ] Did you convert to yolo format?
+- [ ] Is there a data.yaml file in the data directory with the correct number of classes and the class names list?
+- [ ] Did you split the dataset into train, val, and test sets?
+
+
 The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class.Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
@@ -79,6 +112,8 @@ If you get a permissions error, run
 ```
 chmod +x flatten_image_dirs.sh
 ```
+
+### File extensions
 Another small hiccup, ensure all the images have the same extension. Some of our older datasets have a capitalized .JPG, modify and use the change_file_extension.sh script for this.This is also a handy template for making other changes to file names, so keep it in mind.
 ```
 ./change_file_extension.sh

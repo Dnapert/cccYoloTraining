@@ -170,3 +170,4 @@ split_data/
 data/
 training/
 experiments/
+.DS_Store

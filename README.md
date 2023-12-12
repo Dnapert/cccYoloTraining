@@ -5,9 +5,9 @@ Contents:
 - [Collection of all our training data prep code](#collection-of-all-our-training-data-prep-code)
 - [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
 - [The Dataset Builder Class](#the-dataset-builder-class)
-- [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
-    - [What the cli does](#what-the-cli-does)
+- [What the cli does](#what-the-cli-does)
 - [A note on Image sets](#a-note-on-image-sets)
+- [Copying the dataset to the VM from a bucket](#copying-the-dataset-to-the-vm-from-a-bucket)
 - [Be mindful of memory usage](#be-mindful-of-memory-usage)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
@@ -35,13 +35,16 @@ cd <path_to_this_project>
 pip install -r requirements.txt
 ```
 # Basic workflow for dataset creation
-Create an images directory, and put all of your images there.
-Add your annotations to the annotations directory.
-If the experiment directory doesn't exist, create it.
-```
-mkdir experiments
-```
-The main.py cli app works as an interface for the dataset_builder class.
+- Create an `images` directory, and put all of your images there.
+   - If your image directory contains nested folders, use the flatten_image_dirs.sh script to flatten the directory [A note on Image sets](#a-note-on-image-sets).
+- Create an `annotations` directory, and put all of your annotations there.
+
+  - If these are new annotations from CVAT, make sure they are 0 indexed. If not using the [main.py](#what-the-cli-does) cli, or the [dataset builder](#the-dataset-builder-class) class, Use the auto_map_classes.py script to do this. See [Data Augmentation Scripts](#data-augmentation-scripts).
+
+- Add your annotations to the annotations directory.
+If the `experiments` directory doesn't exist, create it.
+
+The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class.Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
 
@@ -52,15 +55,11 @@ The dataset_builder.py file contains the dataset_builder class, which is the mai
 - Remove classes
 - Augment images 
 - Convert annotations to yolo format
-- Split the dataset into train, val, and test sets
+- Split the dataset into train, test, and val sets
   
 
-# Copying the dataset to the VM from a bucket
-```
-gsutil cp gs://<bucket_name>/<file_name>.zip 
-```
 
-### What the cli does
+# What the cli does
 - Creates a dataset_builder class instance
 - Given the name of an existing project, the config file is loaded and the dataset_builder is initialized with the project's config
 - Given a new project name, creates a new project directory under the experiments directory with the name you provide
@@ -88,6 +87,11 @@ Another small hiccup, ensure all the images have the same extension. Some of our
 ```
 chmod +x change_file_extension.sh
 ```
+# Copying the dataset to the VM from a bucket
+```
+gsutil cp gs://<bucket_name>/<file_name>.zip 
+```
+
 # Be mindful of memory usage
  Once you have a dataset, and you've perfomed your training, move the dataset off the VM. It's okay to keep the main set of images, since the cli will copy the files into your experiment directory, but, the VM has limited memory. We have storage buckets in GCP, so use them. To move a dataset to a bucket, zip the whole dataset directory, and upload it to a bucket with gsutil, then delete the dataset from the VM. You can always download it again later.To use gsutil:
 

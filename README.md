@@ -53,6 +53,7 @@ The data directory has it's contents ignored, so it's just a place to store what
 # Order of operations
 The order of operations is important, and it's best to follow this order when creating a new dataset if not using the cli.
 - Create the images and annotations directories if they don't exist
+- Create an experiments directory if it doesn't exist
 - Add your images to the images directory
 - Add your annotations to the annotations directory
 - Flatten the images directory if needed

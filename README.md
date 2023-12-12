@@ -14,6 +14,7 @@ Contents:
 - [Be mindful of memory usage](#be-mindful-of-memory-usage)
   - [Data Augmentation Scripts](#data-augmentation-scripts)
     - [coco2yolo.py](#coco2yolopy)
+    - [add\_filename\_key.py](#add_filename_keypy)
     - [auto\_map\_classes.py](#auto_map_classespy)
     - [remove\_classes.py](#remove_classespy)
     - [augment\_classes.py](#augment_classespy)
@@ -44,9 +45,8 @@ pip install -r requirements.txt
 
   - If these are new annotations from CVAT, make sure they are 0 indexed. If not using the [main.py](#what-the-cli-does) cli, or the [dataset builder](#the-dataset-builder-class) class, Use the auto_map_classes.py script to do this. See [Data Augmentation Scripts](#data-augmentation-scripts).
 
-- Add your annotations to the annotations directory.
-If the `experiments` directory doesn't exist, create it.
-
+- Make sure all the images have the same extension [File extensions](#file-extensions)
+  
 # Order of operations
 The order of operations is important, and it's best to follow this order when creating a new dataset if not using the cli.
 - Create the images and annotations directories if they don't exist
@@ -64,20 +64,21 @@ The order of operations is important, and it's best to follow this order when cr
 # Checklist
 This is a checklist of things to do when creating a new dataset. If you're using the cli, you can skip most of these steps, but it's good to know what's going on under the hood.
 - [ ] Are ALL the images in the `images` directory?
+- [ ] Is the image directory flattened?
 - [ ] Are the annotations in the `annotations` directory?
 - [ ] Are the annotations 0 indexed? 
+- [ ] Is there a `filename` key in the `annotations` of the annotation file?
 - [ ] Are the file paths in the annotations flattened?
-- [ ] Is the image directory flattened?
 - [ ] Do all the images have the same extension?
 - [ ] Did you resize the images?
 - [ ] Did you remove any classes?
 - [ ] Did you perform any augmentations?
 - [ ] Did you convert to yolo format?
-- [ ] Is there a data.yaml file in the data directory with the correct number of classes and the class names list?
+- [ ] Is there a data.yaml file in the converted data directory with the correct number of classes and the class names list?
 - [ ] Did you split the dataset into train, val, and test sets?
 
 
-The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class.Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
+The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class. Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
 The simplest thing to do, is run ```python main.py``` in the terminal.
 You will be guided through generating your dataset.
 
@@ -89,11 +90,12 @@ The dataset_builder.py file contains the dataset_builder class, which is the mai
 - Augment images 
 - Convert annotations to yolo format
 - Split the dataset into train, test, and val sets
+- The class created and maintains a config file for the project, this is where the state of the dataset is stored, and is used to pick up where you left off, or make changes to the dataset. Once you have a dataset, you can use the cli to add to it, or modify it. Be careful when manually editing the config file, it's best to let the cli handle it.
   
 
 
 # What the cli does
-- Creates a dataset_builder class instance
+- Really, the cli is just an interface for the dataset_builder class, and is a bit easier to use than the class itself, since it ensures the correct order of operations.
 - Given the name of an existing project, the config file is loaded and the dataset_builder is initialized with the project's config
 - Given a new project name, creates a new project directory under the experiments directory with the name you provide
 - Creates and maintains a config file for the project
@@ -152,6 +154,8 @@ Always check the script for defaults and usage! There is no undo button!
  - Converts COCO annotations to YOLO format
 - Usage: `python coco2yolo.py --dir <directory to save annoations> --annotation_file <json annotations file> `
 
+### add_filename_key.py
+- Adds a filename key to the annotations in a coco json file
 
 ### auto_map_classes.py
 - given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
@@ -187,7 +191,7 @@ Always check the script for defaults and usage! There is no undo button!
 
 If you didn't use the main.py cli to generate your dataset, make sure to check some things before you proceed.
 
-Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the data.yaml in the data directory as a template
+Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the example_data.yaml as a template. The cli and dataset_builder class will create this file for you, but if you're doing it manually, make sure it's correct.
 
  The order of the classes in the class name list matters, the index of each class name needs to correspond to the category_id in the annotations. For example, if the first class in the list is "person", then the category_id for all the person annotations needs to be 0. The second class in the list needs to have the category_id 1, and so on.
 

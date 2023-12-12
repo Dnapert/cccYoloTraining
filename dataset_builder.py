@@ -28,12 +28,16 @@ class DatasetBuilder:
         self.annotations = annotations
         self.images = images
         self.config_file = f'{self.directory}/config.json'
+        self.class_dict = {}
 
-        self.check_project_exists()
-        self.check_annotations_exists()
+        self.new = self.check_project_exists()
+        if not self.new:
+            self.check_annotations_exists()
         self.check_images_exist()
+        if self.new:
+            self.copy_images()
         
-    def check_project_exists(self) -> None:
+    def check_project_exists(self) -> bool:
         '''
         check if the project already exists and if so , load the config file
         '''
@@ -43,6 +47,7 @@ class DatasetBuilder:
             class_dict = get_class_dict(self.annotations,False)
             labels = labels_per_class(f"{self.directory}/figures",self.annotations)
             self.class_dict = class_dict
+            self.copy_annotations()
             with open(self.config_file, 'w') as f:
                 json.dump({'name': self.name, 
                            'annotations': self.annotations, 
@@ -50,6 +55,7 @@ class DatasetBuilder:
                            'class_dict': class_dict,
                             'labels_per_class': labels
                            }, f, indent=4)
+            return True
         else:
             # load the config file
             with open(self.config_file, 'r+') as f:
@@ -58,20 +64,39 @@ class DatasetBuilder:
                     setattr(self, arg, data[arg])
 
                 print(data)
-
-            print(f'{self.directory} already exists, assuming this is an existing project')
-    
+            print(f'{self.directory} already exists, attempting to load config file...')
+            return False
+    def copy_images(self):
+        '''
+        copy the images to the project folder
+        '''
+        print(f'Copying images from {self.images} to {self.directory}')
+        if not os.path.exists(f'{self.directory}/images'):
+            shutil.copytree(self.images, f'{self.directory}/images')
+            self.images = f'{self.directory}/images'
+        else:
+            print(f'Images already exist in {self.directory}')
+    def copy_annotations(self):
+        '''
+        copy the annotations file to the project folder
+        '''
+        print(f'Copying {self.annotations} to {self.directory}')
+        name = self.annotations.split('/')[-1]
+        if not os.path.isfile(f'{self.directory}/{name}'):
+            shutil.copy(self.annotations,f'{self.directory}/{name}')
+            self.annotations = f'{self.directory}/{name}'
+        else:
+            print(f'Annotations file {self.annotations} already exists in {self.directory}')
     def check_annotations_exists(self) -> None:
         '''
         check to see if the given annoations and image directory exist, and if so, copy the annotation file to the experiment folder
         '''
-
         if not os.path.exists(self.annotations) or not os.path.isfile(self.annotations):
             print(f'Error: {self.annotations} does not exist, please check the path and try again, program exiting')
-            sys.exit()
+            
         else:
-            shutil.copy(self.annotations,f'{self.name}/{self.annotations}')
-            self.annotations = f'{self.name}/{self.annotations}'
+            print(f'Found annotations file {self.annotations}')
+            self.copy_annotations()
         # check if the given images directory exists
 
     def check_images_exist(self):
@@ -368,7 +393,7 @@ class DatasetBuilder:
                         new_id = int(''.join(random.choices(string.digits, k=16)))
                         res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
                         version = res
-                        new_file_name = augment_and_save_image(image, file_name, self.name, version)
+                        new_file_name = augment_and_save_image(image, file_name, self.images, version)
 
                         new_annotation['file_name'] = new_file_name
                         new_annotation['image_id'] = new_id
@@ -395,6 +420,8 @@ class DatasetBuilder:
         self.update_config(annotations=updated_annotations_file, class_dict=class_dict)
         print(f'Annotations saved to {updated_annotations_file}')
         class_dict = get_class_dict(updated_annotations_file,False)
+        self.class_dict = class_dict
+        self.annotations = updated_annotations_file
         os.makedirs(f'{self.directory}/figures', exist_ok=True)
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)

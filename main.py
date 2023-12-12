@@ -191,6 +191,8 @@ def main():
     augmentation_prompt(new_dataset)
     # Convert annotations
     convert_data_prompt(new_dataset)
+    # Split data
+    split_data_prompt(new_dataset)
     
 
 if __name__ == "__main__":

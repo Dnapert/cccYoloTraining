@@ -28,8 +28,11 @@ class DatasetBuilder:
         self.annotations = annotations
         self.images = images
         self.config_file = f'{self.directory}/config.json'
-        # holy constructor batman! 
-        # check if the given project directory exists  
+
+        self.check_project_exists()
+        self.check_data_exists()
+        
+    def check_project_exists(self):
         if not os.path.exists(self.directory) or not os.path.isdir(self.directory):
             print(f'Creating new project folder {self.directory}')
             os.mkdir(self.directory)
@@ -53,7 +56,8 @@ class DatasetBuilder:
                 print(data)
 
             print(f'{self.directory} already exists, assuming this is an existing project')
-        # check if the given annotations file exists
+        
+    def check_data_exists(self):
         if not os.path.exists(self.annotations) or not os.path.isfile(self.annotations):
             print(f'Error: {self.annotations} does not exist, please check the path and try again, program exiting')
             sys.exit()
@@ -68,7 +72,8 @@ class DatasetBuilder:
             num_images = len(os.listdir(f"{self.directory}/resized_images"))
             print(f'Found folder with {num_images} resized images')
             self.images = f'{self.directory}/resized_images'
-   
+
+
     def combine_datasets(self, annotation_file2)-> None:
         '''
         Reads two JSON annotation files and merges them with consistent class IDs and names.

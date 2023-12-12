@@ -171,3 +171,4 @@ data/
 training/
 experiments/
 .DS_Store
+annotations/

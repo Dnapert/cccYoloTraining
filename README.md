@@ -3,6 +3,7 @@
 Contents:
 
 - [Collection of all our training data prep code](#collection-of-all-our-training-data-prep-code)
+- [The data directory](#the-data-directory)
 - [Basic workflow for dataset creation](#basic-workflow-for-dataset-creation)
 - [Order of operations](#order-of-operations)
 - [Checklist](#checklist)
@@ -38,6 +39,8 @@ conda activate <env_name>
 cd <path_to_this_project>
 pip install -r requirements.txt
 ```
+# The data directory
+The data directory has it's contents ignored, so it's just a place to store whatever you want locally without worrying about it getting pushed. Currently the original annotation file is in there.
 # Basic workflow for dataset creation
 - Create an `images` directory, and put all of your images there.
    - If your image directory contains nested folders, use the flatten_image_dirs.sh script to flatten the directory [A note on Image sets](#a-note-on-image-sets).

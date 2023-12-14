@@ -98,11 +98,11 @@ def handle_augmentations(class_names):
                 if num == 'c':
                     return
                 else:
-                    class_augmentation_dict[class_name] = num
+                    class_augmentation_dict[class_name] = int(num)
                
         print(f'Augmenting {class_augmentation_dict}')
-        get_input(f'Press c to confirm or r to restart')
-        if get_input('') == 'r':
+        ans = get_input(f'Press p to proceed or r to restart')
+        if ans == 'r':
             class_augmentation_dict = handle_augmentations(class_names)
         return class_augmentation_dict
         
@@ -159,10 +159,11 @@ def combine_datasets_prompt(new_dataset):
 def augmentation_prompt(new_dataset):
     answer = get_input('Would you like to augment the dataset? (y/n): ')
     if answer in ('yes', 'y'):
-        class_names = new_dataset.get_class_dict(new_dataset.annotations)
+        class_names = new_dataset.get_class_dict(new_dataset.annotations,False)
         class_augmentation_dict = handle_augmentations(class_names)
+        print(class_augmentation_dict)
         if len(class_augmentation_dict) > 0:
-            new_dataset.augment_dataset(class_augmentation_dict)
+            new_dataset.augment_classes(class_augmentation_dict)
     if answer in('n','no','c','cancel'):
         print('Skipping augmentation')
 
@@ -180,10 +181,17 @@ def split_data_prompt(new_dataset):
         new_dataset.split_data(test,train,val,seed)
     if answer in('n','no','c','cancel'):
         print('Skipping split')
-        
+def resize_images_prompt(new_dataset):
+    answer = get_input('Would you like to resize the images? (y/n): ')
+    if answer in ('yes', 'y'):
+        size = get_input('Enter the target width you would like to resize the images to: ')
+        new_dataset.resize_images(int(size))
+    if answer in('n','no','c','cancel'):
+        print('Skipping resize')    
 def main():
     new_dataset = load_or_create_project()
     # Combine datasets
+    resize_images_prompt(new_dataset)
     combine_datasets_prompt(new_dataset)
     # Remove classes
     class_removal_prompt(new_dataset)

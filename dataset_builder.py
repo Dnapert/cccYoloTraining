@@ -74,6 +74,7 @@ class DatasetBuilder:
         if not os.path.exists(f'{self.directory}/images'):
             shutil.copytree(self.images, f'{self.directory}/images')
             self.images = f'{self.directory}/images'
+            self.update_config(images=self.images)
         else:
             print(f'Images already exist in {self.directory}')
     def copy_annotations(self):
@@ -221,7 +222,7 @@ class DatasetBuilder:
                     continue
                 image = cv2.resize(image, (int(target_width),int(target_height)), interpolation=cv2.INTER_AREA)
                 cv2.imwrite(os.path.join(output_dir,filename), image)
-            self.update_config(annotaions = self.annotations, images = output_dir)
+            self.update_config(annotations = self.annotations, images = output_dir)
             self.images = output_dir
 
     def add_filename_key(self,annotation) -> None:
@@ -334,17 +335,19 @@ class DatasetBuilder:
         with open(file_name, 'w') as f:
             json.dump(data, f, indent=4)
 
-    def augment_classes(self,augmentations):
+    def augment_classes(self,augmentations:dict):
         '''
         Augments images based on the number of augmentations specified in the augmentations dictionary.
         '''
+        print(f'Augmenting images in {self.annotations}')
+        print(f'Augmentations: {augmentations}')
         with open(self.annotations, "r") as f:
             data = json.load(f)
 
         annotations = data["annotations"]
         updated_annotations = []
         annotations_length = len(annotations)
-        print(f'Annotations Length: {annotations_length}')
+        print(f'Current Annotations Length: {annotations_length}')
         
         image_template = {
             "file_name": "",
@@ -410,18 +413,18 @@ class DatasetBuilder:
                     
         data["annotations"] += updated_annotations
         
-        print(len(data["annotations"]))
+        print(f'New annotations length"{len(data["annotations"])}')
 
         updated_annotations_file = os.path.splitext(self.annotations)[0] + "_updated.json"
        
         with open(updated_annotations_file, "w") as f:
             json.dump(data, f, indent=4)
         self.annotations = updated_annotations_file
-        self.update_config(annotations=updated_annotations_file, class_dict=class_dict)
         print(f'Annotations saved to {updated_annotations_file}')
         class_dict = get_class_dict(updated_annotations_file,False)
         self.class_dict = class_dict
         self.annotations = updated_annotations_file
+        self.update_config(annotations=updated_annotations_file, class_dict=class_dict,augmentations=augmentations)
         os.makedirs(f'{self.directory}/figures', exist_ok=True)
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)

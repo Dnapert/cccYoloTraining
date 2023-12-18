@@ -189,18 +189,10 @@ def resize_images_prompt(new_dataset):
     if answer in('n','no','c','cancel'):
         print('Skipping resize')    
 def train_prompt(new_dataset):
-    answer = get_input('Would you like to train the model now? (y/n): ')
+    answer = get_input('Would you like to train a v8 model now? (y/n): ')
     if answer in ('yes', 'y'):
-        model = get_input("To train a v8 model enter v8, to train a v5 model enter v5: ")
-        if model == 'v8':
-            epochs = get_input('Enter the number of epochs you would like to train for: ')
-            new_dataset.train_v8_model(int(epochs))
-        elif model == 'v5':
-            epochs = get_input('Enter the number of epochs you would like to train for: ')
-            new_dataset.train_v5_model(int(epochs))
-        else:
-            print('You did not enter a valid model!')
-            train_prompt(new_dataset)
+        epochs = get_input('Enter the number of epochs you would like to train for: ')
+        new_dataset.train_v8_model(int(epochs))
     if answer in('n','no','c','cancel'):
         print('Skipping training')
 def main():

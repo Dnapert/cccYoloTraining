@@ -437,13 +437,22 @@ class DatasetBuilder:
         '''
         with open(self.annotations, 'r') as f:
             data = json.load(f)
-        with open(f"{self.directory}/data/data.yaml","w") as f:
+        with open(f"{self.directory}/data/datav8.yaml","w") as f:
             f.write("train: train/images\n")
             f.write("test: test/images \n")
             f.write("val: val/images\n")
             f.write(f"nc: {len(self.class_dict)}\n")
             f.write(f"names: {list(self.class_dict.values())}")
         print(f'Created data.yaml file for {self.name}')
+        with open(f"{self.directory}/data/datav5.yaml","w") as f:
+            f.write(f"train: {self.name}/train/images\n")
+            f.write(f"test: {self.name}/test/images \n")
+            f.write(f"val: {self.name}val/images\n")
+            f.write(f"nc: {len(self.class_dict)}\n")
+            f.write(f"names: {list(self.class_dict.values())}")
+        print(f'Created data.yaml file for {self.name}')
+
+
 
     def to_yolo(self):
         '''
@@ -622,10 +631,10 @@ class DatasetBuilder:
         '''
         trains yolov8 on the dataset
         '''
-        trainv8(f'{self.directory}/data/data.yaml',epochs)
+        trainv8(f'{self.directory}/data/datav8.yaml',epochs)
         
     def train_v5_model(self,epochs):
         '''
         trains yolov5 on the dataset
         '''
-        trainv5(f'{self.directory}/data/data.yaml',epochs)
+        trainv5(f'{self.directory}/data/datav5.yaml',epochs)

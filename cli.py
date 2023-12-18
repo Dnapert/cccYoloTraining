@@ -188,10 +188,26 @@ def resize_images_prompt(new_dataset):
         new_dataset.resize_images(int(size))
     if answer in('n','no','c','cancel'):
         print('Skipping resize')    
+def train_prompt(new_dataset):
+    answer = get_input('Would you like to train the model now? (y/n): ')
+    if answer in ('yes', 'y'):
+        model = get_input("To train a v8 model enter v8, to train a v5 model enter v5: ")
+        if model == 'v8':
+            epochs = get_input('Enter the number of epochs you would like to train for: ')
+            new_dataset.trainv8(int(epochs))
+        elif model == 'v5':
+            epochs = get_input('Enter the number of epochs you would like to train for: ')
+            new_dataset.trainv5(int(epochs))
+        else:
+            print('You did not enter a valid model!')
+            train_prompt(new_dataset)
+    if answer in('n','no','c','cancel'):
+        print('Skipping training')
 def main():
     new_dataset = load_or_create_project()
-    # Combine datasets
+    # Resize images
     resize_images_prompt(new_dataset)
+    # Combine datasets
     combine_datasets_prompt(new_dataset)
     # Remove classes
     class_removal_prompt(new_dataset)
@@ -201,6 +217,8 @@ def main():
     convert_data_prompt(new_dataset)
     # Split data
     split_data_prompt(new_dataset)
+    # Train prompt
+    train_prompt(new_dataset)
     
 
 if __name__ == "__main__":

@@ -1,13 +1,13 @@
 from ultralytics import YOLO
 import argparse
 
-def main(data,epochs):
+def trainv8(data,epochs):
     model = YOLO('yolov8s.pt')
     results = model.train(data=data,epochs=epochs)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data', type=str, default='data/coco128.yaml', help='dataset.yaml path')
-    parser.add_argument('--epochs', type=int, default=300, help='number of epochs')
+    parser.add_argument('--epochs', type=int, default=100, help='number of epochs')
     args = parser.parse_args()
-    main(args.data,args.epochs)
+    trainv8(args.data,args.epochs)

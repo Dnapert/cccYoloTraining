@@ -46,7 +46,7 @@ The data directory has it's contents ignored, so it's just a place to store what
    - If your image directory contains nested folders, use the flatten_image_dirs.sh script to flatten the directory [A note on Image sets](#a-note-on-image-sets).
 - Create an `annotations` directory, and put all of your annotations there.
 
-  - If these are new annotations from CVAT, make sure they are 0 indexed. If not using the [main.py](#what-the-cli-does) cli, or the [dataset builder](#the-dataset-builder-class) class, Use the auto_map_classes.py script to do this. See [Data Augmentation Scripts](#data-augmentation-scripts).
+  - If these are new annotations from CVAT, make sure they are 0 indexed. If not using the [cli.py](#what-the-cli-does) cli, or the [dataset builder](#the-dataset-builder-class) class, Use the auto_map_classes.py script to do this. See [Data Augmentation Scripts](#data-augmentation-scripts).
 
 - Make sure all the images have the same extension [File extensions](#file-extensions)
   
@@ -82,8 +82,8 @@ This is a checklist of things to do when creating a new dataset. If you're using
 - [ ] Did you split the dataset into train, val, and test sets?
 
 
-The [main.py](#what-the-cli-does) cli works as an interface for the dataset_builder class. Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
-The simplest thing to do, is run ```python main.py``` in the terminal.
+The [cli.py](#what-the-cli-does) cli works as an interface for the dataset_builder class. Once you have your images and annotations in the correct directories, you can use the cli to create a new project, or add to an existing project.
+The simplest thing to do, is run ```python cli.py``` in the terminal.
 You will be guided through generating your dataset.
 
 # The Dataset Builder Class
@@ -193,7 +193,7 @@ Always check the script for defaults and usage! There is no undo button!
 
 # Uploading the Data to the VM
 
-If you didn't use the main.py cli to generate your dataset, make sure to check some things before you proceed.
+If you didn't use the cli.py to generate your dataset, make sure to check some things before you proceed.
 
 Make sure that you have a data.yaml file in your data directory with the correct number of classes and the class names list, use the example_data.yaml as a template. The cli and dataset_builder class will create this file for you, but if you're doing it manually, make sure it's correct.
 

@@ -6,6 +6,7 @@ import sys
 import shutil
 import cv2
 from pathlib import Path
+from v8train import trainv8
 from utility_scripts.get_class_dict import get_class_dict
 from utility_scripts.labels_per_class import labels_per_class
 from utility_scripts.utils import *
@@ -615,3 +616,13 @@ class DatasetBuilder:
                 json.dump(class_dict, f, indent=4)
             print(f'Class dict written to {annotation_file}')
         return class_dict
+    def train_v8_model(self,epochs):
+        '''
+        trains yolov8 on the dataset
+        '''
+        trainv8(f'{self.directory}/data/data.yaml',epochs)
+    def train_v5_model(self,epochs):
+        '''
+        trains yolov5 on the dataset
+        '''
+        pass

@@ -120,7 +120,7 @@ def handle_class_removal(class_dict):
 
     valid_class_ids = []
     for class_id in class_ids:
-        if class_id not in class_dict:
+        if int(class_id) not in class_dict:
             print(f'Class {class_id} does not exist!')
         elif not class_id.isdigit():
             print(f'{class_id} is not a valid class ID!')
@@ -128,7 +128,7 @@ def handle_class_removal(class_dict):
             valid_class_ids.append(int(class_id))
     print(f'Removing classes:')
     for class_id in valid_class_ids:
-        print(f'{class_dict[str(class_id)]}\n')
+        print(f'{class_dict[class_id]}\n')
     proceed = get_input('Enter p to proceed ,r to restart, or c to cancel:')
     if proceed == 'p':
         return valid_class_ids

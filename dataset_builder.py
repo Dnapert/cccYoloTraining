@@ -34,9 +34,13 @@ class DatasetBuilder:
         self.new = self.check_project_exists()
         if not self.new:
             self.check_annotations_exists()
+            self.flatten_image_paths(self.annotations)
+            self.remap_classes_to_zero_index(self.annotations)
         self.check_images_exist()
         if self.new:
             self.copy_images()
+            self.flatten_image_paths(self.annotations)
+            self.remap_classes_to_zero_index(self.annotations)
         
     def check_project_exists(self) -> bool:
         '''
@@ -63,10 +67,29 @@ class DatasetBuilder:
                 data = json.load(f)
                 for arg in data:
                     setattr(self, arg, data[arg])
-
                 print(data)
             print(f'{self.directory} already exists, attempting to load config file...')
             return False
+        
+    def flatten_image_paths(self,annotations):
+        '''
+        flattens the image paths in the annotations file and adds file_name key to annotations
+        '''
+        with open(annotations, 'r') as f:
+            data = json.load(f)
+        for i in data['images']:
+            i['file_name'] = i['file_name'].split('/')[-1]
+        for i in data['annotations']:
+            if not 'file_name' in i:
+                with open(annotations, 'w') as f:
+                    json.dump(data, f, indent=4)
+                self.add_filename_key(annotations)
+                return
+            i['file_name'] = i['file_name'].split('/')[-1]
+        with open(annotations, 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f'Flattened image paths in {annotations}')
+            
     def copy_images(self):
         '''
         copy the images to the project folder
@@ -297,13 +320,13 @@ class DatasetBuilder:
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)
 
-    def remap_classes_to_zero_index(self,annotation_file,overwrite)->dict:
+    def remap_classes_to_zero_index(self,annotation_file)->dict:
         '''
         given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
         returns a dictionary of class_id's and class_names
         
         '''
-        with open(annotation_file, 'r') as f:
+        with open(annotation_file, 'r+') as f:
             data = json.load(f)
 
         class_dict = self.get_class_dict(annotation_file, False)
@@ -316,24 +339,18 @@ class DatasetBuilder:
         for annotation in data['annotations']:
         
             original_class_name = class_dict[annotation['category_id']]
-            annotation['category_id'] = class_to_new_id[original_class_name]    
-        file_name = f'{self.directory}/{annotation_file}'
-        if not os.path.exists(file_name):
-            self.write_json_file(data, file_name)
-        else:
-            if overwrite:
-                os.remove(file_name)
-                self.write_json_file(data, file_name)
-            else:
-                file_name = file_name.split('.', 1)[0] + '_remapped.json'
-                self.write_json_file(data, file_name)
+            annotation['category_id'] = class_to_new_id[original_class_name]
+        with open(annotation_file, 'w') as f:    
+            json.dump(data, f, indent=4)
+        self.class_dict = class_dict
+        self.update_config(annotations=annotation_file, class_dict=class_dict)
         return class_to_new_id
     
-    def write_json_file(data, file_name):
+    def write_json_file(self,data, file_name):
         '''
         writes a json file to the given file name
         '''
-        with open(file_name, 'w') as f:
+        with open(file_name, 'r+') as f:
             json.dump(data, f, indent=4)
 
     def augment_classes(self,augmentations:dict):
@@ -344,7 +361,6 @@ class DatasetBuilder:
         print(f'Augmentations: {augmentations}')
         with open(self.annotations, "r") as f:
             data = json.load(f)
-
         annotations = data["annotations"]
         updated_annotations = []
         annotations_length = len(annotations)

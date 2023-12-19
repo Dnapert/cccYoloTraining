@@ -32,16 +32,34 @@ class DatasetBuilder:
         self.class_dict = {}
 
         self.new = self.check_project_exists()
+        
         if not self.new:
             self.check_annotations_exists()
-            self.flatten_image_paths(self.annotations)
-            self.remap_classes_to_zero_index(self.annotations)
+        
+        self.check_indexes_filename_key_and_image_paths()    
         self.check_images_exist()
+        
         if self.new:
             self.copy_images()
-            self.flatten_image_paths(self.annotations)
-            self.remap_classes_to_zero_index(self.annotations)
-        
+            
+            
+    def check_indexes_filename_key_and_image_paths(self):
+        '''
+        checks to see if the annotations have file_name key and if the image paths are flattened, if not, it will flatten the image paths and add the file_name key and zero index the class_id's
+        '''
+        with open(self.annotations, 'r') as f:
+            data = json.load(f)
+        for i in data['categories']:
+            if not 0 in data['categories']:
+                self.remap_classes_to_zero_index(self.annotations)
+        for i in data['images']:
+            #check for / in file_name
+            if '/' in i['file_name'][0]:
+                self.flatten_image_paths(self.annotations)
+        for i in data['annotations']:
+            if not 'file_name' in i:
+                self.add_filename_key(self.annotations)
+    
     def check_project_exists(self) -> bool:
         '''
         check if the project already exists and if so , load the config file
@@ -621,10 +639,11 @@ class DatasetBuilder:
         else:
             self.remap_classes_to_zero_index(annotation_file)
             self.add_filename_key(annotation_file)
+            
     def get_class_dict(self,annotation_file,write:bool)->dict:
         '''
         reads a json annotation file and returns a dictionary of class_id's and class_names
-        optionally writes the dictionary to a json file with the name <annotation_file>.json
+        optionally writes the dictionary to a json file with the name <annotation_file>_dict.json
         '''
         class_dict = {}
         with open(annotation_file, 'r') as f:

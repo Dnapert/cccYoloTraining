@@ -589,8 +589,12 @@ class DatasetBuilder:
             directory = f'{output_dir}/{dataset}/labels'
             for index in datasets[dataset]:
                 image_name = files[index].split('.')[0] + '.' + 'jpg'
-                shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
-                shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
+                try:
+                    shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
+                    shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
+                except:
+                    print(f'Error copying {files[index]}')
+                    continue
         print('done')
         for keys in datasets:
             counts = self.output_num_labels(f'{output_dir}/{keys}/labels')

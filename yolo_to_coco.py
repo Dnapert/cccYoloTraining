@@ -4,26 +4,36 @@ import argparse
 import uuid
 import cv2
 from collections import defaultdict
-
 def convert_yolo_bbox_to_coco_bbox(yolo_bbox, width, height):
     # YOLO format: x_center, y_center, w, h (all normalized)
     # COCO format: x1, y1, w, h (absolute values)
+
     x_center, y_center, w, h = yolo_bbox  
 
+    # center coordinates and dimensions to absolute values
     x_center, y_center, w, h = x_center * width, y_center * height, w * width, h * height
-    
+
     # Calculate top left corner of the bbox
     x1 = x_center - w / 2
     y1 = y_center - h / 2
-    
-    # Width and height remain the same from the YOLO format
+
+    # Ensure that the coordinates are within the image boundaries
+    x1 = max(0, min(x1, width - 1))
+    y1 = max(0, min(y1, height - 1))
+    x2 = min(x1 + w, width - 1)
+    y2 = min(y1 + h, height - 1)
+
+    # Update width and height to reflect potential adjustments
+    w, h = x2 - x1, y2 - y1
+
     return [x1, y1, w, h]
+
 
     
 def yolo_to_coco(dir,ann_name):
     '''
-    given a directory with yolo dataset (images and labels directories), convert to coco json format
-    You will need to modify the categories dictionary to match your dataset
+    given a directory with a yolo dataset (images and labels directories), convert to coco json format
+    You will need to modify the categories dictionary to match your dataset!
     '''
     anns = os.listdir(f'{dir}/labels')
     images = os.listdir(f'{dir}/images')

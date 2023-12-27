@@ -174,3 +174,4 @@ experiments/
 annotations/
 runs/
 *.pt
+mareaverde_panama_sample/

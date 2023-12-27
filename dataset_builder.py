@@ -12,12 +12,9 @@ from utility_scripts.labels_per_class import labels_per_class
 from utility_scripts.utils import *
 import albumentations as A
 import copy
-from datetime import datetime
 import sys
 import string
 import random
-import glob
-from random import shuffle
 import matplotlib.pyplot as plt
 
 
@@ -119,6 +116,7 @@ class DatasetBuilder:
             self.update_config(images=self.images)
         else:
             print(f'Images already exist in {self.directory}')
+            
     def copy_annotations(self):
         '''
         copy the annotations file to the project folder

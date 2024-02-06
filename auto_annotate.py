@@ -35,7 +35,7 @@ def auto_annotate(model, image_dir,batch_size=12):
         results = model(batch,verbose=False)
 
         for i,item in enumerate(results):
-            image_id    = images[i]
+            image_id    = i
             res = item.boxes.cpu().numpy()
             classes = res.cls
             boxes = res.xywhn

@@ -36,10 +36,10 @@ def bar_graph(label_dict,name):
         os.makedirs(name,exist_ok=True)
     plt.savefig(f"{name}/labels.png")
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument('--annotations', default='../data/modified/modified.json', help='path to the annotation directory')
-    
+parser = argparse.ArgumentParser()
+parser.add_argument('--annotations', default='../data/modified/modified.json', help='path to the annotation directory')
+
 if __name__ == '__main__':
 
-    args = argparser.parse_args()
+    args = parser.parse_args()
     labels_per_class(args.annotations)

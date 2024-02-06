@@ -2,8 +2,7 @@
 import json
 import argparse
 from utility_scripts.get_class_dict import get_class_dict
-import json
-import json
+
 
 
 
@@ -70,11 +69,11 @@ def combine_datasets(annotation_file1, annotation_file2):
 
    
 
-argparse = argparse.ArgumentParser()
-argparse.add_argument('--annotation_file1', type=str, default='annotations/original_annotations.json')
-argparse.add_argument('--annotation_file2', type=str, default='11-13.json')
+argsParser = argparse.ArgumentParser()
+argsParser.add_argument('--annotation_file1', type=str, default='annotations/original_annotations.json')
+argsParser.add_argument('--annotation_file2', type=str, default='11-13.json')
 
-args = argparse.parse_args()
+args = argsParser.parse_args()
 
 if __name__ == '__main__':
     combine_datasets(args.annotation_file1,args.annotation_file2)

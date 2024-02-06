@@ -2,7 +2,7 @@
 
 # Define the directory to search and the file extension to search for
 search_dir="images/resized_images"
-search_extension=".jpg.jpg.jpg.jpg.jpg"
+search_extension=".JPG"
 
 # Use find to locate all .JPG files and rename them to .jpg
 find "$search_dir" -type f -name "*${search_extension}" -exec sh -c '

@@ -1,9 +1,6 @@
 
 import json
 import argparse
-from get_class_dict import get_class_dict
-
-
 
 
 def combine_datasets(annotation_file1, annotation_file2):
@@ -43,15 +40,15 @@ def combine_datasets(annotation_file1, annotation_file2):
     data1_id_dict = {data1['images'][i]['id']: i +1 for i in range(maxn)}
     
     for i in range(len(data1['annotations'])):
-        data1['annotations'][i]['id'] = data1_id_dict[data1['annotations'][i]['image_id']]
+        data1['annotations'][i]['id'] = i
         data1['annotations'][i]['image_id'] = data1_id_dict[data1['annotations'][i]['image_id']]
         
         
     data2_id_dict = {data2['images'][i]['id']: i + maxn for i in range(len(data2['images']))}
     
     for i in range(len(data2['annotations'])):
-        data2['annotations'][i]['id'] = data2_id_dict[data2['annotations'][i]['image_id']] + maxn
-        data2['annotations'][i]['image_id'] = data2_id_dict[data2['annotations'][i]['image_id']] + maxn
+        data2['annotations'][i]['id'] = i + maxn
+        data2['annotations'][i]['image_id'] = data2_id_dict[data2['annotations'][i]['image_id']] 
         
 
     combined_annotations = data1['annotations'] + data2['annotations']
@@ -81,7 +78,7 @@ def combine_datasets(annotation_file1, annotation_file2):
         json.dump(combined_data, f, indent=4)
 
     print(f"Combined annotations saved to {file_name}")
-    #print(get_class_dict(file_name, False))
+    
 
 
    

@@ -24,9 +24,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     for i in range(len(images)): 
         image_list.append((f'{image_dir}/{images[i]}'))
 
-    count = 1
     while current_batch < len(image_list):
-        batch = image_list[prev_batch:current_batch if current_batch < len(image_list) else len(image_list)]
+        batch = image_list[prev_batch:current_batch]
         results = model(batch,verbose=False)
         if move:
             for image in batch:
@@ -34,7 +33,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
                 os.system(f"mv {image} {output_image_dir}")
 
         for i,item in enumerate(results):
-            image_id = i + count
+            image_id = len(data['images'])
             res = item.boxes.cpu().numpy()
             classes = res.cls
             boxes = res.xywhn
@@ -43,12 +42,13 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
             for box,cls in zip(boxes,classes):
                 x,y,w,h = [float    (b) for b in box]
                 data['annotations'].append({
+                    "id" : len(data['annotations']),
                     "image_id":image_id,
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
                     "file_name":images[i].split('/')[-1]
                      })
-        count += len(batch)
+   
         prev_batch = current_batch
         current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
         

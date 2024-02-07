@@ -83,12 +83,6 @@ def combine_datasets(annotation_file1, annotation_file2):
         json.dump(combined_data, f, indent=4)
 
     print(f"Combined annotations saved to {file_name}")
-    
-
-
-   
-
-
 
 if __name__ == '__main__':
     argsParser = argparse.ArgumentParser()

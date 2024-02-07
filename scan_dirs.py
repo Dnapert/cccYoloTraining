@@ -9,8 +9,7 @@ def scan_dirs():
     directories = ['/home/bucket-mounts/1','/home/bucket-mounts/2','/home/bucket-mounts/3']
 
     for directory in directories:
-        #auto_annotate('best.pt',directory,move=True,output_image_dir='/home/bucket-mounts/auto_annotations',output_annotation_dir='/home/bucket-mounts/annotations')
-        print(f"Scanning {directory}")
-        print(os.listdir(directory))
+       images =  os.listdir(f'{directory}/images')
+       print(len(images))
 
 scan_dirs()

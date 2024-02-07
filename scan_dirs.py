@@ -9,7 +9,11 @@ def scan_dirs():
     directories = ['/home/bucket-mounts/1','/home/bucket-mounts/2','/home/bucket-mounts/3']
 
     for directory in directories:
-       images =  os.listdir(f'{directory}/images')
-       print(len(images))
+       subdirs =  os.listdir(directory)
+       for dir in subdirs:
+           images = os.listdir(f'{directory}/{dir}/images')
+           print(len(images))
+           
+      
 
 scan_dirs()

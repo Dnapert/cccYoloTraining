@@ -12,3 +12,5 @@ def scan_dirs():
         #auto_annotate('best.pt',directory,move=True,output_image_dir='/home/bucket-mounts/auto_annotations',output_annotation_dir='/home/bucket-mounts/annotations')
         print(f"Scanning {directory}")
         print(os.listdir(directory))
+
+scan_dirs()

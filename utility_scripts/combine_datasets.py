@@ -36,7 +36,7 @@ def combine_datasets(annotation_file1, annotation_file2):
     
     # Remap the image ids to be unique across the two datasets
     maxn = len(data1['images'])
-    print(maxn)
+  
     data1_id_dict = {data1['images'][i]['id']: i +1 for i in range(maxn)}
     
     for i in range(len(data1['images'])):
@@ -45,9 +45,7 @@ def combine_datasets(annotation_file1, annotation_file2):
     for i in range(len(data1['annotations'])):
         data1['annotations'][i]['id'] = i
         data1['annotations'][i]['image_id'] = data1_id_dict[data1['annotations'][i]['image_id']]
-        
-        
-        
+             
     data2_id_dict = {data2['images'][i]['id']: 1 + i + maxn for i in range(len(data2['images']))}
     
     for i in range(len(data2['images'])):
@@ -77,7 +75,7 @@ def combine_datasets(annotation_file1, annotation_file2):
             image_dict[i['id']] = i['file_name']
     for a in combined_data['annotations']:
         if not 'file_name' in a:
-            a['file_name'] = image_dict[a['image_id']] if a['image_id'] in image_dict else 'unknown'
+            a['file_name'] = image_dict[a['image_id']] 
 
 
     file_name = annotation_file1.split('.', 1)[0] + '_combined.json'

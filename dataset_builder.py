@@ -186,6 +186,28 @@ class DatasetBuilder:
         data2['annotations'] = update_annotations(data2['annotations'], class_dict2)
 
         new_categories = [{"id": id, "name": name} for name, id in class_to_new_id.items()]
+        
+            # Remap the image ids to be unique across the two datasets
+        maxn = len(data1['images'])
+    
+        data1_id_dict = {data1['images'][i]['id']: i +1 for i in range(maxn)}
+        
+        for i in range(len(data1['images'])):
+            data1['images'][i]['id'] = data1_id_dict[data1['images'][i]['id']]
+        
+        for i in range(len(data1['annotations'])):
+            data1['annotations'][i]['id'] = i
+            data1['annotations'][i]['image_id'] = data1_id_dict[data1['annotations'][i]['image_id']]
+                
+        data2_id_dict = {data2['images'][i]['id']: 1 + i + maxn for i in range(len(data2['images']))}
+        
+        for i in range(len(data2['images'])):
+            data2['images'][i]['id'] = data2_id_dict[data2['images'][i]['id']]
+            
+        for i in range(len(data2['annotations'])):
+            data2['annotations'][i]['id'] = 1 + i + maxn
+            data2['annotations'][i]['image_id'] = data2_id_dict[data2['annotations'][i]['image_id']] 
+             
 
         combined_annotations = data1['annotations'] + data2['annotations']
         combined_images = data1['images'] + data2['images']

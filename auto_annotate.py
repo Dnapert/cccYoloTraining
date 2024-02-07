@@ -5,7 +5,7 @@ import datetime
 import argparse
 
 
-def auto_annotate(model, image_dir,batch_size=12):
+def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='auto_annotations',output_annotation_dir='annotations'):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
     '''
@@ -18,23 +18,23 @@ def auto_annotate(model, image_dir,batch_size=12):
     current_batch = batch_size
     prev_batch = 0
 
-        
     for k,v in enumerate(names):
         data['categories'].append({"id":k,"name":v,"supercategory":"object"})
     
-    for i in range(len(images)):  # change this to len(images) to annotate all images
+    for i in range(len(images)): 
         image_list.append((f'{image_dir}/{images[i]}'))
-    mod = len(image_list) % batch_size
-    
-    if mod != 0:
-        current_batch -= mod
-   
+
+    count = 1
     while current_batch < len(image_list):
         batch = image_list[prev_batch:current_batch if current_batch < len(image_list) else len(image_list)]
         results = model(batch,verbose=False)
+        if move:
+            for image in batch:
+                # move images to attached bucket
+                os.system(f"mv {image} {output_image_dir}")
 
         for i,item in enumerate(results):
-            image_id = i
+            image_id = i + count
             res = item.boxes.cpu().numpy()
             classes = res.cls
             boxes = res.xywhn
@@ -48,20 +48,23 @@ def auto_annotate(model, image_dir,batch_size=12):
                     "bbox":[x,y,w,h],
                     "file_name":images[i].split('/')[-1]
                      })
-                
-            prev_batch = current_batch
-            current_batch += batch_size
-    
-  
-    print(f"Annotated {len(images)} images")
-    with open(f'annotations/{ann_name}.json', 'w') as f:
+        count += len(batch)
+        prev_batch = current_batch
+        current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
+        
+    print(f"Annotations written to annotations/{ann_name}.json")
+    print(f"Annotated {len(data['images'])} images")
+    with open(f'{output_annotation_dir}/{ann_name}.json', 'w') as f:
         json.dump(data, f, indent=4)
 
 parser = argparse.ArgumentParser(description='Auto Annotate')
 parser.add_argument('--model', type=str, help='path to model')
 parser.add_argument('--dir', type=str, help='path to image directory')
 parser.add_argument('--batch_size', type=int, help='batch size')
+parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
+parser.add_argument('--output_image_dir', type=str, help='path to output image directory')
+parser.add_argument('--output_annotation_dir', default='annotations', type=str, help='path to output annotation directory')
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    auto_annotate(args.model, args.dir, args.batch_size)
+    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_image_dir, args.output_annotation_dir)

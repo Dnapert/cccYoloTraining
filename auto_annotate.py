@@ -30,7 +30,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
         if move:
             for image in batch:
                 # move images to attached bucket
-                os.system(f"mv {image} {output_image_dir}")
+                 os.system(f"mv {image} {output_image_dir}")
 
         for i,item in enumerate(results):
             image_id = len(data['images'])
@@ -38,7 +38,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
             classes = res.cls
             boxes = res.xywhn
             h,w = item.orig_shape
-            data['images'].append({"file_name":images[i],"id":image_id,"width":w,"height":h})
+            data['images'].append({"file_name":batch[i].split('/')[-1],"id":image_id,"width":w,"height":h})
+            # if len(boxes) == 0:
+            #     os.system(f"cp {batch[i]} background/{batch[i].split('/')[-1]} ")
             for box,cls in zip(boxes,classes):
                 x,y,w,h = [float    (b) for b in box]
                 data['annotations'].append({

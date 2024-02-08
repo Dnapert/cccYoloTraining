@@ -18,7 +18,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     prev_batch = 0
 
     
-    data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in enumerate(names)]
+    data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
 
     image_list = [f'{image_dir}/{image}' for image in images]
     

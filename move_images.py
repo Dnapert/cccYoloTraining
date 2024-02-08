@@ -19,9 +19,9 @@ wheel1_dir = '/home/bucket-mounts/1'
 wheel2_dir   = '/home/bucket-mounts/2'
 wheel3_dir = '/home/bucket-mounts/3'
 
-dir1 = [f"{wheel1_dir}/{i}" for i in wheel1]
-dir2 = [f"{wheel2_dir}/{i}" for i in wheel2]
-dir3 = [f"{wheel3_dir}/{i}" for i in wheel3]
+dir1 = [f"{wheel1_dir}/{i}/images" for i in wheel1]
+dir2 = [f"{wheel2_dir}/{i}/images" for i in wheel2]
+dir3 = [f"{wheel3_dir}/{i}/images" for i in wheel3]
 
 output_folder = '/home/bucket-mounts/annotated_images'
 

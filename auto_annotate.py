@@ -14,16 +14,14 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     images = os.listdir(image_dir)
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names
-    image_list = []
     current_batch = batch_size
     prev_batch = 0
 
-    for k,v in enumerate(names):
-        data['categories'].append({"id":k,"name":v,"supercategory":"object"})
     
-    for i in range(len(images)): 
-        image_list.append((f'{image_dir}/{images[i]}'))
+    data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in enumerate(names)]
 
+    image_list = [f'{image_dir}/{image}' for image in images]
+    
     while current_batch < len(image_list):
         batch = image_list[prev_batch:current_batch]
         results = model(batch,verbose=False)
@@ -40,7 +38,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
             h,w = item.orig_shape
             data['images'].append({"file_name":batch[i].split('/')[-1],"id":image_id,"width":w,"height":h})
             # if len(boxes) == 0:
-            #     os.system(f"cp {batch[i]} background/{batch[i].split('/')[-1]} ")
+            #     os.system(f"mv {batch[i]} background/{batch[i].split('/')[-1]} ")
             for box,cls in zip(boxes,classes):
                 x,y,w,h = [float    (b) for b in box]
                 data['annotations'].append({
@@ -48,7 +46,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
                     "image_id":image_id,
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
-                    "file_name":images[i].split('/')[-1]
+                    "file_name":batch[i].split('/')[-1]
                      })
    
         prev_batch = current_batch

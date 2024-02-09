@@ -205,10 +205,14 @@ def main():
     class_removal_prompt(new_dataset)
     # Perform augmentation
     augmentation_prompt(new_dataset)
-    # Convert annotations
-    convert_data_prompt(new_dataset)
-    # Split data
-    split_data_prompt(new_dataset)
+    
+    new_dataset.to_yolo()
+    new_dataset.split_data(.8,.1,.1,42)
+    
+    # # Convert annotations
+    # convert_data_prompt(new_dataset)
+    # # Split data
+    # split_data_prompt(new_dataset)
     # Train prompt
     train_prompt(new_dataset)
     

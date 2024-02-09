@@ -6,7 +6,7 @@ def tolower(annotation_file):
         file = json.load(f)
     for i in range(len(file['annotations'])):
         # change all .JPG images to .jpg
-        annotation_file['annotations'][i]['file_name'] = file['annotations'][i]['file_name'].split('.')[0] + '.jpg'
+        file['annotations'][i]['file_name'] = file['annotations'][i]['file_name'].split('.')[0] + '.jpg'
     with open(annotation_file, 'w') as f:
         json.dump(file, f, indent=4)
         

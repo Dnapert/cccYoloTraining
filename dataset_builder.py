@@ -609,6 +609,7 @@ class DatasetBuilder:
         for dataset in datasets:
             make_dirs(f'{output_dir}/{dataset}')
             directory = f'{output_dir}/{dataset}/labels'
+            err_counter = 0
             for index in datasets[dataset]:
                 image_name = files[index].split('.')[0] + '.' + 'jpg'
                 try:
@@ -616,8 +617,9 @@ class DatasetBuilder:
                     shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
                 except:
                     print(f'Error copying {files[index]} with error {sys.exc_info()}')
+                    err_counter += 1
                     continue
-        print('done')
+        print('done with ', err_counter, 'errors')
         for keys in datasets:
             counts = self.output_num_labels(f'{output_dir}/{keys}/labels')
             self.bar_graph(counts, output_dir, keys)

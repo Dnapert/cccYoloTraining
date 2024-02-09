@@ -3,7 +3,7 @@ import json
 import argparse
 
 
-def combine_datasets(annotation_file1, annotation_file2):
+def combine_datasets(annotation_file1, annotation_file2,ann_name):
     '''
     Reads two JSON annotation files and merges them with consistent class IDs and names.
 
@@ -12,9 +12,10 @@ def combine_datasets(annotation_file1, annotation_file2):
  
     with open(annotation_file1, 'r') as f:
         data1 = json.load(f)
+        
     with open(annotation_file2, 'r') as f:
         data2 = json.load(f)
-
+        
     class_dict1 = {category['id']: category['name'] for category in data1['categories']}
     class_dict2 = {category['id']: category['name'] for category in data2['categories']}
 
@@ -77,8 +78,9 @@ def combine_datasets(annotation_file1, annotation_file2):
         if not 'file_name' in a:
             a['file_name'] = image_dict[a['image_id']] 
 
-
-    file_name = annotation_file1.split('.', 1)[0] + '_combined.json'
+    if not ann_name:
+        ann_name = annotation_file1.split('.', 1)[0] + '_combined'
+    file_name = ann_name + '.json'
     with open(file_name, 'w') as f:
         json.dump(combined_data, f, indent=4)
 
@@ -88,5 +90,6 @@ if __name__ == '__main__':
     argsParser = argparse.ArgumentParser()
     argsParser.add_argument('--a1', type=str, default='annotations/original_annotations.json')
     argsParser.add_argument('--a2', type=str, default='11-13.json')
+    argsParser.add_argument('--ann_name', type=str, default=None)
     args = argsParser.parse_args()
-    combine_datasets(args.a1,args.a2)
+    combine_datasets(args.a1,args.a2,args.ann_name)

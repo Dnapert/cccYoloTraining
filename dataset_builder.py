@@ -615,7 +615,7 @@ class DatasetBuilder:
                     shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
                     shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
                 except:
-                    print(f'Error copying {files[index]}')
+                    print(f'Error copying {files[index]} with error {sys.exc_info()}')
                     continue
         print('done')
         for keys in datasets:

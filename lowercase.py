@@ -15,5 +15,5 @@ argsparser.add_argument('-a',help='path to annotation file')
 args = argsparser.parse_args()
 
 if __name__ == '__main__':
-    tolower(args.annotation_file)
+    tolower(args.a)
         

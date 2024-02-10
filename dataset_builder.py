@@ -33,30 +33,35 @@ class DatasetBuilder:
         if not self.new:
             self.check_annotations_exists()
         
-        self.check_indexes_filename_key_and_image_paths()    
+        self.prep_annotations()    
         self.check_images_exist()
         
         if self.new:
-            self.copy_images()
+            self.copy_images(self.annotations)
             
             
-    def check_indexes_filename_key_and_image_paths(self):
+    def prep_annotations(self):
         '''
         checks to see if the annotations have file_name key and if the image paths are flattened, if not, it will flatten the image paths and add the file_name key and zero index the class_id's
         '''
         with open(self.annotations, 'r') as f:
             data = json.load(f)
-        for i in data['categories']:
-            if not 0 in data['categories']:
-                self.remap_classes_to_zero_index(self.annotations)
-        for i in data['images']:
-            #check for / in file_name
-            if '/' in i['file_name'][0]:
-                self.flatten_image_paths(self.annotations)
-        for i in data['annotations']:
-            if not 'file_name' in i:
-                self.add_filename_key(self.annotations)
-    
+        
+        if data['categories'][0]['id'] != 0:
+            print('remapping class id\'s to zero index')
+            data = self.remap_classes_to_zero_index(data) 
+                
+        if '/' in data['images'][0]['file_name']:
+            print('Flattening image paths in annotations')
+            data = self.flatten_image_paths(data)
+            
+        if not 'file_name' in data['annotations'][0]:
+            print('adding file_name key to annotations')
+            data = self.add_filename_key(data)
+            
+        with open(self.annotations, 'w') as f:
+            json.dump(data, f, indent=4)
+            
     def check_project_exists(self) -> bool:
         '''
         check if the project already exists and if so , load the config file
@@ -86,34 +91,36 @@ class DatasetBuilder:
             print(f'{self.directory} already exists, attempting to load config file...')
             return False
         
-    def flatten_image_paths(self,annotations):
+    def flatten_image_paths(self,data)-> dict:
         '''
-        flattens the image paths in the annotations file and adds file_name key to annotations
+        flattens the image paths in the annotations and adds file_name key 
         '''
-        with open(annotations, 'r') as f:
-            data = json.load(f)
+        
         for i in data['images']:
             i['file_name'] = i['file_name'].split('/')[-1]
+        if not 'file_name' in data['annotations'][0]:
+            print('adding file_name key to annotations')
+            data = self.add_filename_key(data)
         for i in data['annotations']:
-            if not 'file_name' in i:
-                with open(annotations, 'w') as f:
-                    json.dump(data, f, indent=4)
-                self.add_filename_key(annotations)
-                return
             i['file_name'] = i['file_name'].split('/')[-1]
-        with open(annotations, 'w') as f:
-            json.dump(data, f, indent=4)
-        print(f'Flattened image paths in {annotations}')
+        
+        return data
             
-    def copy_images(self):
+    def copy_images(self,annotation_file):
         '''
         copy the images to the project folder
         '''
-        print(f'Copying images from {self.images} to {self.directory}')
+        with open(annotation_file , 'r') as f:
+            data = json.load(f)
+            images = data['images']
+        print(f'Copying images in annotation file to {self.directory}')
         if not os.path.exists(f'{self.directory}/images'):
-            shutil.copytree(self.images, f'{self.directory}/images')
-            self.images = f'{self.directory}/images'
-            self.update_config(images=self.images)
+            os.mkdir(f'{self.directory}/images')
+            for i in images:
+                try:
+                    shutil.copy(f"{self.images}/{i['file_name']}", f"{self.directory}/images")
+                except:
+                    print(f'Error copying {i["file_name"]}, file not found')
         else:
             print(f'Images already exist in {self.directory}')
             
@@ -128,17 +135,14 @@ class DatasetBuilder:
             self.annotations = f'{self.directory}/{name}'
         else:
             print(f'Annotations file {self.annotations} already exists in {self.directory}')
+            
     def check_annotations_exists(self) -> None:
         '''
         check to see if the given annoations and image directory exist, and if so, copy the annotation file to the experiment folder
         '''
         if not os.path.exists(self.annotations) or not os.path.isfile(self.annotations):
             print(f'Error: {self.annotations} does not exist, please check the path and try again, program exiting')
-            
-        else:
-            print(f'Found annotations file {self.annotations}')
-            self.copy_annotations()
-        # check if the given images directory exists
+            sys.exit()
 
     def check_images_exist(self):
         '''
@@ -162,7 +166,7 @@ class DatasetBuilder:
 
         '''
         print("starting")
-    
+        self.copy_images(annotation_file2)
         with open(self.annotations, 'r') as f:
             data1 = json.load(f)
         with open(annotation_file2, 'r') as f:
@@ -287,20 +291,19 @@ class DatasetBuilder:
             self.update_config(annotations = self.annotations, images = output_dir)
             self.images = output_dir
 
-    def add_filename_key(self,annotation) -> None:
+    def add_filename_key(self,data) -> dict:
         '''
         Adds filename key to annotations file if missing
         '''
         image_dict = {}
-        with open(annotation, 'r') as f:
-            data = json.load(f)
+       
         for i in data['images']:
             image_dict[i['id']] = i['file_name']
         for a in data['annotations']:
             if not 'file_name' in a:
                 a['file_name'] = image_dict[a['image_id']]
-        with open(annotation, 'w') as f:
-            json.dump(data, f, indent=4)
+      
+        return data
 
     def remove_classes(self,classes_to_remove) -> None:
         """
@@ -358,19 +361,17 @@ class DatasetBuilder:
         with open(f'{self.directory}/figures/{self.name}_class_dict.json', 'w') as f:
             json.dump(class_dict, f, indent=4)
 
-    def remap_classes_to_zero_index(self,annotation_file)->dict:
+    def remap_classes_to_zero_index(self,data)->dict:
         '''
-        given a coco json annotation file, remaps the class_id's to 0 indexed and fixes missing class_id's.
-        returns a dictionary of class_id's and class_names
-        
+        given an annotation dictionary, remaps the class_id's to 0 indexed and fixes missing class_id's.
+        returns the updated annotation dictionary
         '''
-        with open(annotation_file, 'r+') as f:
-            data = json.load(f)
-
-        class_dict = self.get_class_dict(annotation_file, False)
+        class_dict = {}
+        for i in  data['categories']:
+            class_dict[i['id']] = i['name']
 
         class_to_new_id = {class_name: new_id for new_id, class_name in enumerate(class_dict.values())}
-        #print(class_to_new_id)
+
         for category in data['categories']:
             category['id'] = class_to_new_id[category['name']]
 
@@ -378,11 +379,9 @@ class DatasetBuilder:
         
             original_class_name = class_dict[annotation['category_id']]
             annotation['category_id'] = class_to_new_id[original_class_name]
-        with open(annotation_file, 'w') as f:    
-            json.dump(data, f, indent=4)
+       
         self.class_dict = class_dict
-        self.update_config(annotations=annotation_file, class_dict=class_dict)
-        return class_to_new_id
+        return data
     
     def write_json_file(self,data, file_name):
         '''
@@ -620,7 +619,7 @@ class DatasetBuilder:
                     shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
                     shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
                 except:
-                    print(f'Error copying {files[index]} with error {sys.exc_info()}')
+                    print(f'Error moving {files[index]} with error {sys.exc_info()}')
                     err_counter += 1
                     continue
         print('done with ', err_counter, 'errors')
@@ -663,12 +662,6 @@ class DatasetBuilder:
         plt.savefig(f'{file_path}/figures/{dataset_name}.png')
         plt.close()
 
-    def load_annotation_file(self,annotation_file):
-        if not os.path.exists(annotation_file):
-            print(f'Did not find {annotation_file}')
-        else:
-            self.remap_classes_to_zero_index(annotation_file)
-            self.add_filename_key(annotation_file)
             
     def get_class_dict(self,annotation_file,write:bool)->dict:
         '''

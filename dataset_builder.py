@@ -595,6 +595,7 @@ class DatasetBuilder:
         provide the ratios of train test and validate in decimal percentage.
         provide a seed for the random shuffle for reproducibility (optional).
         '''
+        err_counter = 0
         output_dir = f'{self.directory}/data'
         files = os.listdir(self.directory + '/labels')
         if files == []:
@@ -612,7 +613,7 @@ class DatasetBuilder:
         for dataset in datasets:
             make_dirs(f'{output_dir}/{dataset}')
             directory = f'{output_dir}/{dataset}/labels'
-            err_counter = 0
+            
             for index in datasets[dataset]:
                 image_name = files[index].split('.')[0] + '.' + 'jpg'
                 try:

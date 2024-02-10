@@ -54,10 +54,11 @@ class DatasetBuilder:
         if '/' in data['images'][0]['file_name']:
             print('Flattening image paths in annotations')
             data = self.flatten_image_paths(data)
-            
-        if not 'file_name' in data['annotations'][0]:
-            print('adding file_name key to annotations')
-            data = self.add_filename_key(data)
+        
+        if len(data['annotations']):
+            if not 'file_name' in data['annotations'][0]:
+                print('adding file_name key to annotations')
+                data = self.add_filename_key(data)
             
         with open(self.annotations, 'w') as f:
             json.dump(data, f, indent=4)
@@ -69,7 +70,7 @@ class DatasetBuilder:
         if not os.path.exists(self.directory) or not os.path.isdir(self.directory):
             print(f'Creating new project folder {self.directory}')
             os.mkdir(self.directory)
-            class_dict = get_class_dict(self.annotations,False)
+            class_dict = self.get_class_dict(self.annotations,False)
             labels = labels_per_class(f"{self.directory}/figures",self.annotations)
             self.class_dict = class_dict
             self.copy_annotations()
@@ -98,12 +99,13 @@ class DatasetBuilder:
         
         for i in data['images']:
             i['file_name'] = i['file_name'].split('/')[-1]
-        if not 'file_name' in data['annotations'][0]:
-            print('adding file_name key to annotations')
-            data = self.add_filename_key(data)
-        for i in data['annotations']:
-            i['file_name'] = i['file_name'].split('/')[-1]
-        
+        if len(data['annotations']):
+            if not 'file_name' in data['annotations'][0]:
+                print('adding file_name key to annotations')
+                data = self.add_filename_key(data)
+            for i in data['annotations']:
+                i['file_name'] = i['file_name'].split('/')[-1]
+            
         return data
             
     def copy_images(self,annotation_file):
@@ -123,6 +125,7 @@ class DatasetBuilder:
                     print(f'Error copying {i["file_name"]}, file not found')
         else:
             print(f'Images already exist in {self.directory}')
+        self.images = f'{self.directory}/images'
             
     def copy_annotations(self):
         '''
@@ -166,11 +169,13 @@ class DatasetBuilder:
 
         '''
         print("starting")
+        
+        
         self.copy_images(annotation_file2)
         with open(self.annotations, 'r') as f:
             data1 = json.load(f)
         with open(annotation_file2, 'r') as f:
-            data2 = json.load(f)
+            data2 = self.flatten_image_paths(json.load(f))
 
         class_dict1 = {category['id']: category['name'] for category in data1['categories']}
         class_dict2 = {category['id']: category['name'] for category in data2['categories']}
@@ -221,18 +226,6 @@ class DatasetBuilder:
             'annotations': combined_annotations,
             'categories': new_categories
         }
-
-        image_dict = {}
-
-        # add file_name key to annotations, the cvat export didn't have them
-        for i in combined_data['images']:
-            # another issue with the cvat export, the file_name is the full path so we need to split it
-            i['file_name'] = i['file_name'].split('/')[-1]
-            if i['id'] not in image_dict:
-                image_dict[i['id']] = i['file_name']
-        for a in combined_data['annotations']:
-            if not 'file_name' in a:
-                a['file_name'] = image_dict[a['image_id']]
 
 
         file_name = f'{self.directory}/{self.name}_combined.json'
@@ -544,15 +537,11 @@ class DatasetBuilder:
                 imgToAnns[ann['image_id']].append(ann)
         
             print(f'Number of duplicate images: {counter}')
-            print(f'annotations length: {len(imgToAnns)}')
             # Write labels file
             for img_id, anns in imgToAnns.items():
                 img = images[img_id]
                 h, w, f = img['height'], img['width'], img['file_name']
-                # if fixed_size:
-                #     h = int(height)
-                #     w = int(width)
-
+      
                 bboxes = []
                 for ann in anns:
                     
@@ -571,7 +560,7 @@ class DatasetBuilder:
                 
                 # Write
                 with open((fn / f).with_suffix('.txt'), 'a') as file:
-                    #print(f, w, h, file=file)  # filename width height # no need to write this, messes up the training parser
+             
                     for i in range(len(bboxes)):
                         line = *(bboxes[i]),  # cls, box or segments
                         file.write(('%g ' * len(line)).rstrip() % line + '\n')
@@ -616,8 +605,8 @@ class DatasetBuilder:
             for index in datasets[dataset]:
                 image_name = files[index].split('.')[0] + '.' + 'jpg'
                 try:
-                    shutil.copy(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
-                    shutil.copy(f'{self.directory}/labels/{files[index]}', directory)
+                    shutil.move(f'{self.images}/{image_name}', f'{output_dir}/{dataset}/images')
+                    shutil.move(f'{self.directory}/labels/{files[index]}', directory)
                 except:
                     print(f'Error moving {files[index]} with error {sys.exc_info()}')
                     err_counter += 1

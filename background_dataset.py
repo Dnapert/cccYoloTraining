@@ -46,17 +46,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
                 counter += 1
                 sys.stdout.write(f'\r Found {counter} background images')
                 if move:
-                    os.system(f"mv {batch[i]} {output_image_dir}/{batch[i].split('/')[-1]} ")
+                    os.system(f"cp {batch[i]} {output_image_dir}/{batch[i].split('/')[-1]} ")
                 data['images'].append({"file_name":batch[i].split('/')[-1],"id":image_id,"width":w,"height":h})
-                for box,cls in zip(boxes,classes):
-                    x,y,w,h = [float    (b) for b in box]
-                    data['annotations'].append({
-                        "id" : len(data['annotations']),
-                        "image_id":image_id,
-                        "category_id":int(cls),
-                        "bbox":[x,y,w,h],
-                        "file_name":batch[i].split('/')[-1]
-                        })
+                
     
         prev_batch = current_batch
         current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)

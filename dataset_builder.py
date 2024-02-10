@@ -533,6 +533,9 @@ class DatasetBuilder:
                     counter += 1
                     #sys.stdout.write(f'\r {counter} duplicate images found')
                     
+            for i in range(len(data['images'])):
+                with open((fn / data['images'][i]['file_name']).with_suffix('.txt'), 'w') as file:
+                    pass
 
             # Create image-annotations dict
             imgToAnns = defaultdict(list)

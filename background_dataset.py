@@ -23,9 +23,10 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
         print(f"ERROR: {image_dir} is empty")
         return
     
-    images = []
-    for directory in directories:
-        images.extend(os.listdir(f'{image_dir}/{directory}/images'))
+    dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
+    images = [f'{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
+    
+    
     print(f"Found {len(images)} images")
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names

@@ -24,10 +24,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
         return
     
     dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
-    images = [f'{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
+    image_list = [f'{image_dir}/{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
     
-    
-    print(f"Found {len(images)} images")
+    print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names
     current_batch = batch_size
@@ -35,7 +34,6 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     
     data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
 
-    image_list = [f'{image_dir}/{image}' for image in images]
     counter = 0
     
     while current_batch < len(image_list):
@@ -45,7 +43,6 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
         for i,item in enumerate(results):
             image_id = len(data['images'])
             res = item.boxes.cpu().numpy()
-            classes = res.cls
             boxes = res.xywhn
             h,w = item.orig_shape
             # Only add images with no detections

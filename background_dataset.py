@@ -17,7 +17,15 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
         return
-    images = os.listdir(image_dir)
+    directories = os.listdir(image_dir)
+    if len(directories) == 0:
+        print(f"ERROR: {image_dir} is empty")
+        return
+    
+    images = []
+    for directory in directories:
+        images.extend(os.listdir(f'{image_dir}/{directory}/images'))
+    print(f"Found {len(images)} images")
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names
     current_batch = batch_size
@@ -32,7 +40,6 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     while current_batch < len(image_list):
         batch = image_list[prev_batch:current_batch]
         results = model(batch,verbose=False)
-        
 
         for i,item in enumerate(results):
             image_id = len(data['images'])

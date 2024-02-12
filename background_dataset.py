@@ -50,9 +50,10 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
             if len(boxes) == 0:
                 counter += 1
                 sys.stdout.write(f'\r Found {counter} background images')
+                file_name = batch[i].split('/')[-1]
                 if move:
-                    os.system(f"mv {batch[i]} {output_image_dir}/{batch[i].split('/')[-1]} ")
-                data['images'].append({"file_name":batch[i].split('/')[-1],"id":image_id,"width":w,"height":h})
+                    os.system(f"mv {batch[i]} {output_image_dir}/{file_name} ")
+                data['images'].append({"file_name":file_name,"id":image_id,"width":w,"height":h})
                 
     
         prev_batch = current_batch

@@ -9,6 +9,7 @@ import sys
 def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='auto_annotations',output_annotation_dir='annotations'):
     '''
     Generate coco datset of only background images (no detections) using yolov8 model
+    pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
     ann_name = image_dir.split('/')[0]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")

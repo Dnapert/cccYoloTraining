@@ -12,7 +12,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
-    ann_name = image_dir.split('/')[-1]+ '_background_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
+    ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
     if not os.path.exists(output_image_dir):
         os.makedirs(output_image_dir)
     if not os.path.exists(image_dir):

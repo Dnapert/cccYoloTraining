@@ -89,6 +89,8 @@ class DatasetBuilder:
                 for arg in data:
                     setattr(self, arg, data[arg])
                 print(data)
+            class_dict = self.get_class_dict(self.annotations,False)
+            self.prep_annotations()
             print(f'{self.directory} already exists, attempting to load config file...')
             return False
         

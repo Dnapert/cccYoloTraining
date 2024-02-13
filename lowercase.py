@@ -4,6 +4,9 @@ import argparse
 def tolower(annotation_file):
     with open(annotation_file, 'r') as f:
         file = json.load(f)
+    for i in range(len(file['images'])):
+        # change all .JPG images to .jpg
+        file['images'][i]['file_name'] = file['images'][i]['file_name'].split('.')[0] + '.jpg'
     for i in range(len(file['annotations'])):
         # change all .JPG images to .jpg
         file['annotations'][i]['file_name'] = file['annotations'][i]['file_name'].split('.')[0] + '.jpg'

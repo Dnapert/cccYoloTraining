@@ -8,26 +8,38 @@ import argparse
 def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='auto_annotations',output_annotation_dir='annotations'):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
+    pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
     ann_name = image_dir.split('/')[0]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
-    images = os.listdir(image_dir)
+    if not os.path.exists(output_image_dir):
+        print(f"ERROR: {output_image_dir} not found")
+        return
+    if not os.path.exists(image_dir):
+        print(f"ERROR: {image_dir} not found")
+        return
+    directories = os.listdir(image_dir)
+    if len(directories) == 0:
+        print(f"ERROR: {image_dir} is empty")
+        return
+    
+    dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
+    image_list = [f'{image_dir}/{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
+    
+    print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names
     current_batch = batch_size
     prev_batch = 0
-
     
     data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
-
-    image_list = [f'{image_dir}/{image}' for image in images]
     
     while current_batch < len(image_list):
         batch = image_list[prev_batch:current_batch]
         results = model(batch,verbose=False)
         if move:
             for image in batch:
-                # move images to attached bucket
+                # move images to output_image_dir
                  os.system(f"mv {image} {output_image_dir}")
 
         for i,item in enumerate(results):
@@ -36,9 +48,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
             classes = res.cls
             boxes = res.xywhn
             h,w = item.orig_shape
-            data['images'].append({"file_name":batch[i].split('/')[-1],"id":image_id,"width":w,"height":h})
-            # if len(boxes) == 0:
-            #     os.system(f"mv {batch[i]} background/{batch[i].split('/')[-1]} ")
+            file_name = batch[i].split('/')[-1]
+            data['images'].append({"file_name":file_name,"id":image_id,"width":w,"height":h})
+       
             for box,cls in zip(boxes,classes):
                 x,y,w,h = [float    (b) for b in box]
                 data['annotations'].append({
@@ -46,7 +58,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
                     "image_id":image_id,
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
-                    "file_name":batch[i].split('/')[-1]
+                    "file_name":file_name
                      })
    
         prev_batch = current_batch

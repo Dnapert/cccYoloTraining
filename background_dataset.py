@@ -14,7 +14,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     model = YOLO(model)
     ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
     if not os.path.exists(output_image_dir):
-        os.makedirs(output_image_dir)
+        print(f"ERROR: {output_image_dir} not found")
+        return
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
         return

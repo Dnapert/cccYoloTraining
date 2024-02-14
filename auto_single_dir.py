@@ -26,9 +26,10 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
     
    
     ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
-    if not  os.path.exists(f"{output_dir}/{ann_name}"):
-        os.makedirs(f"{output_dir}/{ann_name}")
-    output_dir = f"{output_dir}/{ann_name}"
+    if move:
+        if not  os.path.exists(f"{output_dir}/{ann_name}"):
+            os.makedirs(f"{output_dir}/{ann_name}")
+        output_dir = f"{output_dir}/{ann_name}"
     output_annotation_dir = f"{output_dir}/{ann_name}.json"
     
     print(f"Found: {len(image_list)} images")

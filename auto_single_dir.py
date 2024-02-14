@@ -58,7 +58,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
                     "image_id":image_id,
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
-                    "file_name":file_name
+                    "file_name":file_name,
+                    "iscrowd":0,
                      })
    
         prev_batch = current_batch

@@ -5,24 +5,29 @@ import datetime
 import argparse
 
 
-def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/home/trashwheel/auto_annotations",output_annotation_dir='/home/trashwheel/auto_annotations/annotations'):
+def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
     pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
-    ann_name = image_dir.split('/')[0]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
-    if not os.path.exists(output_image_dir):
-        print(f"ERROR: {output_image_dir} not found")
+    if not os.path.exists(output_dir):
+        print(f"ERROR: {output_dir} not found")
         return
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
         return
-    directories = os.listdir(image_dir)
+    
     if len(directories) == 0:
         print(f"ERROR: {image_dir} is empty")
         return
     
+    ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
+    os.makedirs(f"{output_dir}/{ann_name}")
+    output_dir = f"{output_dir}/{ann_name}"
+    output_annotation_dir = f"{output_dir}/{ann_name}.json"
+    
+    directories = os.listdir(image_dir)
     dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
     image_list = [f'{image_dir}/{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
     
@@ -39,8 +44,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
         results = model(batch,verbose=False)
         if move:
             for image in batch:
-                # move images to output_image_dir
-                 os.system(f"mv {image} {output_image_dir}")
+                # move images to output_dir
+                 os.system(f"mv {image} {output_dir}")
 
         for i,item in enumerate(results):
             image_id = len(data['images'])
@@ -58,7 +63,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
                     "image_id":image_id,
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
-                    "file_name":file_name
+                    "file_name":file_name,
+                    "iscrowd":0,
                      })
    
         prev_batch = current_batch
@@ -74,9 +80,9 @@ parser.add_argument('--model', type=str, help='path to model')
 parser.add_argument('--dir', type=str, help='path to image directory')
 parser.add_argument('--batch_size', type=int, help='batch size')
 parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
-parser.add_argument('--output_image_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
-parser.add_argument('--output_annotation_dir', default='/home/trashwheel/auto_annotations/annotations', type=str, help='path to output annotation directory')
+parser.add_argument('--output_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_image_dir, args.output_annotation_dir)
+    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_dir)

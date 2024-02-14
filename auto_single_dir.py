@@ -51,7 +51,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
             image_id = len(data['images'])
             res = item.boxes.cpu().numpy()
             classes = res.cls
-            boxes = res.boxes.cpu().numpy()
+            boxes = res.boxes
             height,width = item.orig_shape
             file_name = batch[i].split('/')[-1]
             data['images'].append({"file_name":file_name,"id":image_id,"width":width,"height":height})

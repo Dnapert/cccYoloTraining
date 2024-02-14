@@ -5,15 +5,15 @@ import datetime
 import argparse
 
 
-def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/home/trashwheel/auto_annotations"):
+def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
     pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
    
-    if not os.path.exists(output_image_dir):
-        print(f"ERROR: {output_image_dir} not found")
+    if not os.path.exists(output_dir):
+        print(f"ERROR: {output_dir} not found")
         return
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
@@ -44,8 +44,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
         results = model(batch,verbose=False)
         if move:
             for image in batch:
-                # move images to output_image_dir
-                 os.system(f"mv {image} {output_image_dir}")
+                # move images to output_dir
+                 os.system(f"mv {image} {output_dir}")
 
         for i,item in enumerate(results):
             image_id = len(data['images'])
@@ -87,9 +87,9 @@ parser.add_argument('--model', type=str, help='path to model')
 parser.add_argument('--dir', type=str, help='path to image directory')
 parser.add_argument('--batch_size', type=int, help='batch size')
 parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
-parser.add_argument('--output_image_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
+parser.add_argument('--output_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
 
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_image_dir)
+    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_dir)

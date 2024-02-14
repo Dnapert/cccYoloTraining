@@ -57,7 +57,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
             data['images'].append({"file_name":file_name,"id":image_id,"width":width,"height":height})
        
             for box,cls in zip(boxes,classes):
-                x,y,w,h = [float    (b) for b in box]
+                x,y,w,h = [float (b) for b in box]
                 data['annotations'].append({
                     "id" : len(data['annotations']),
                     "image_id":image_id,
@@ -73,7 +73,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
         prev_batch = current_batch
         current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
         
-    print(f"Annotations written to annotations/{ann_name}.json")
+    print(f"Annotations written to annotations/{ann_name}_1.json")
     print(f"Annotated {len(data['images'])} images")
     with open(f'{output_dir}/{ann_name}.json', 'w') as f:
         json.dump(data, f, indent=4)

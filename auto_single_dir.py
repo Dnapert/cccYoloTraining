@@ -29,8 +29,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
     if move:
         if not  os.path.exists(f"{output_dir}/{ann_name}"):
             os.makedirs(f"{output_dir}/{ann_name}")
-        output_dir = f"{output_dir}/{ann_name}"
-    output_annotation_dir = f"{output_dir}/{ann_name}.json"
+  
     
     print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
@@ -80,7 +79,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
         
     print(f"Annotations written to annotations/{ann_name}.json")
     print(f"Annotated {len(data['images'])} images")
-    with open(f'{output_annotation_dir}/{ann_name}.json', 'w') as f:
+    with open(f'{output_dir}/{ann_name}.json', 'w') as f:
         json.dump(data, f, indent=4)
 
 parser = argparse.ArgumentParser(description='Auto Annotate')

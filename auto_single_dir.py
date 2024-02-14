@@ -73,9 +73,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
         prev_batch = current_batch
         current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
         
-    print(f"Annotations written to annotations/{ann_name}_1.json")
+    print(f"Annotations written to {ann_name}_1.json")
     print(f"Annotated {len(data['images'])} images")
-    with open(f'{output_dir}/{ann_name}.json', 'w') as f:
+    with open(f'{output_dir}/{ann_name}_1.json', 'w') as f:
         json.dump(data, f, indent=4)
 
 parser = argparse.ArgumentParser(description='Auto Annotate')

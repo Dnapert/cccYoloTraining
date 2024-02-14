@@ -22,7 +22,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
     if len(images) == 0:
         print(f"ERROR: {image_dir} is empty")
         return
-    image_list = [f'{image_dir}/{image}' for image in images]
+    image_list = [f'{image_dir}/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
     
    
     

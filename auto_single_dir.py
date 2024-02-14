@@ -57,9 +57,9 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
             data['images'].append({"file_name":file_name,"id":image_id,"width":width,"height":height})
        
             for box,cls in zip(boxes,classes):
-                x1,y1,x2,y2 = [float (b) for b in box]
-                width = float(x2-x1) * width
-                height = float(y2-y1) * height
+                x1,y1,x2,y2,cls = [float (b) for b in box]
+                w = float(x2-x1) * width
+                h = float(y2-y1) * height
                 x = float(x1) * width
                 y = float(y1) * height
                 data['annotations'].append({

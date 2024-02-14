@@ -5,13 +5,13 @@ import datetime
 import argparse
 
 
-def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/home/trashwheel/auto_annotations",output_annotation_dir='/home/trashwheel/auto_annotations/annotations'):
+def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
     pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
-    ann_name = image_dir.split('/')[0]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
+   
     if not os.path.exists(output_image_dir):
         print(f"ERROR: {output_image_dir} not found")
         return
@@ -25,6 +25,11 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
     image_list = [f'{image_dir}/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
     
    
+    ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
+    if not  os.path.exists(f"{output_dir}/{ann_name}"):
+        os.makedirs(f"{output_dir}/{ann_name}")
+    output_dir = f"{output_dir}/{ann_name}"
+    output_annotation_dir = f"{output_dir}/{ann_name}.json"
     
     print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
@@ -83,8 +88,8 @@ parser.add_argument('--dir', type=str, help='path to image directory')
 parser.add_argument('--batch_size', type=int, help='batch size')
 parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
 parser.add_argument('--output_image_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
-parser.add_argument('--output_annotation_dir', default='/home/trashwheel/auto_annotations/annotations', type=str, help='path to output annotation directory')
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_image_dir, args.output_annotation_dir)
+    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_image_dir)

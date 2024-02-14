@@ -18,13 +18,13 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir="/h
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
         return
-    directories = os.listdir(image_dir)
-    if len(directories) == 0:
+    images = os.listdir(image_dir)
+    if len(images) == 0:
         print(f"ERROR: {image_dir} is empty")
         return
+    image_list = [f'{image_dir}/{image}' for image in images]
     
-    dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
-    image_list = [f'{image_dir}/{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
+   
     
     print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}

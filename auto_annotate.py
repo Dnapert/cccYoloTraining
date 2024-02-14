@@ -52,18 +52,22 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
             image_id = len(data['images'])
             res = item.boxes.cpu().numpy()
             classes = res.cls
-            boxes = res.xywh
+            boxes = res.xyxy
             height,width = item.orig_shape
             file_name = batch[i].split('/')[-1]
             data['images'].append({"file_name":file_name,"id":image_id,"width":width,"height":height})
        
             for box,cls in zip(boxes,classes):
-                x,y,w,h = [float    (b) for b in box]
+                x1,y1,x2,y2 = [float    (b) for b in box]
+                tl_x = x1
+                tl_y = y1
+                w = x2 - x1
+                h = y2 - y1
                 data['annotations'].append({
                     "id" : len(data['annotations']),
                     "image_id":image_id,
                     "category_id":int(cls),
-                    "bbox":[x,y,w,h],
+                    "bbox":[tl_x,tl_y,w,h],
                     "file_name":file_name,
                     "area":w*h,
                     "segmentation":[],

@@ -64,6 +64,8 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
                     "category_id":int(cls),
                     "bbox":[x,y,w,h],
                     "file_name":file_name,
+                    "area":w*h,
+                    "segmentation":[],
                     "iscrowd":0,
                      })
    

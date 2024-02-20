@@ -5,32 +5,28 @@ import datetime
 import argparse
 
 
-def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
+def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
     pass path to trash wheel folder i.e. /home/trashwheel/1
     '''
     model = YOLO(model)
-    if not os.path.exists(output_dir):
-        print(f"ERROR: {output_dir} not found")
-        return
-    if not os.path.exists(image_dir):
-        print(f"ERROR: {image_dir} not found")
-        return
+    buckets = [f'/home/trashwheel/{i}' for i in range(1,4)]
+    image_list = []
+
+    for bucket in buckets:
+        subdirs = os.listdir(bucket)
+        for subdir in subdirs:
+            images = os.listdir(f"{bucket}/{subdir}/images")
+            image_list += [f'{bucket}/{subdir}/images/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
+    print(f"Found: {len(image_list)} images")
     
-    if len(directories) == 0:
-        print(f"ERROR: {image_dir} is empty")
-        return
-    
-    ann_name = image_dir.split('/')[-1]+ '_' + datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
+    ann_name = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
     if not  os.path.exists(f"{output_dir}/{ann_name}"):
         os.makedirs(f"{output_dir}/{ann_name}")
     output_dir = f"{output_dir}/{ann_name}"
     output_annotation_dir = f"{output_dir}/{ann_name}.json"
     
-    directories = os.listdir(image_dir)
-    dir_tree = {directory:os.listdir(f'{image_dir}/{directory}/images') for directory in directories}
-    image_list = [f'{image_dir}/{directory}/images/{image}' for directory in dir_tree for image in dir_tree[directory]]
     
     print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
@@ -83,8 +79,7 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/tr
         json.dump(data, f, indent=4)
 
 parser = argparse.ArgumentParser(description='Auto Annotate')
-parser.add_argument('--model', type=str, help='path to model')
-parser.add_argument('--dir', type=str, help='path to image directory')
+parser.add_argument('--model', type=str,default='best.pt', help='path to model')
 parser.add_argument('--batch_size', type=int, help='batch size')
 parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
 parser.add_argument('--output_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
@@ -92,4 +87,4 @@ parser.add_argument('--output_dir', type=str,default='/home/trashwheel/auto_anno
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    auto_annotate(args.model, args.dir, args.batch_size,args.move, args.output_dir)
+    auto_annotate(args.model, args.batch_size,args.move, args.output_dir)

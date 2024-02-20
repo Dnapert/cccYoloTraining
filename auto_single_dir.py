@@ -8,7 +8,7 @@ import argparse
 def auto_annotate(model, image_dir,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
-    pass path to trash wheel folder i.e. /home/trashwheel/1
+    pass path to trash wheel folder i.e. /home/trashwheel/1/12-1-23/images
     '''
     model = YOLO(model)
    

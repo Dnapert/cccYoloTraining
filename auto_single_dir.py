@@ -22,7 +22,9 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
         print(f"ERROR: {image_dir} is empty")
         return
     image_list = [f'{image_dir}/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
-    
+    if len(image_list) == 0:
+        print(f"ERROR: {image_dir} is empty")
+        return
     annotation_name = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")  # timestamp for annotation file and directory
     
     if move:

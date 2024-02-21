@@ -99,3 +99,4 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=12, help='batch size')
     parser.add_argument('--move', type=bool, default=False, help='move images to attached bucket')
     parser.add_argument('--output_dir', type=str
+

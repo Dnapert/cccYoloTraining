@@ -41,15 +41,15 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
         return
     
     annotation_name = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
-    if move:
-        if not os.path.exists(f"{output_dir}/{annotation_name}"):
-            os.makedirs(f"{output_dir}/{annotation_name}")
+    output_annotation_dir = os.path.join(output_dir, annotation_name)
+    if move and not os.path.exists(output_annotation_dir):
+        os.makedirs(output_annotation_dir)
     
     print(f"Found: {len(image_list)} images")
     
     # Assign custom categories to data dictionary
     data = {'categories': custom_categories, 'images': [], 'annotations': []}
-
+    print(model.names)
     # Mapping from model names to custom category IDs
     model_names_to_custom_ids = {name: i for i, cat in enumerate(custom_categories) for name in model.names if name == cat['name']}
     
@@ -67,6 +67,7 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
             data['images'].append({"file_name": file_name, "id": image_id, "width": width, "height": height})
             
             for box, cls in zip(boxes, classes):
+                print(classes)
                 # Use mapping to get correct category ID
                 category_id = model_names_to_custom_ids.get(int(cls), -1)  # Default to -1 if class name not found
                 if category_id == -1:

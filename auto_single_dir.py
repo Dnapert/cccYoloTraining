@@ -68,7 +68,7 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
             
             for box, cls in zip(boxes, classes):
                 # Use mapping to get correct category ID
-                category_id = model_names_to_custom_ids.get(cls, -1)  # Default to -1 if class name not found
+                category_id = model_names_to_custom_ids.get(int(cls), -1)  # Default to -1 if class name not found
                 if category_id == -1:
                     print(f'Invalid category ID {cls}')
                     continue  # Skip annotation if class name not found in mapping

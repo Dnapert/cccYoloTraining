@@ -98,5 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('--dir', type=str, help='path to image directory')
     parser.add_argument('--batch_size', type=int, default=12, help='batch size')
     parser.add_argument('--move', type=bool, default=False, help='move images to attached bucket')
-    parser.add_argument('--output_dir', type=str
+    parser.add_argument('--output_dir', type=str, default='/home/trashwheel/auto_annotations', help='path to output image directory')
 
+    args = parser.parse_args()
+    auto_annotate(args.model, args.dir, args.batch_size, args.move, args.output_dir)

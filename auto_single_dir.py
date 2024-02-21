@@ -49,10 +49,10 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
     
     # Assign custom categories to data dictionary
     data = {'categories': custom_categories, 'images': [], 'annotations': []}
-    print(model.names)
-    # Mapping from model names to custom category IDs
-    model_names_to_custom_ids = {name: i for i, cat in enumerate(custom_categories) for name in model.names if name == cat['name']}
-    
+    model_names = {i: name for i, name in enumerate(model.names)}
+    name_to_id = {category['name']: category['id'] for category in custom_categories}
+    model_name_to_id = {name: name_to_id.get(name, -1) for name in model.names}
+
     for i in range(0, len(image_list), batch_size):
         batch = image_list[i:i+batch_size]
         results = model(batch, verbose=False)
@@ -67,12 +67,11 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
             data['images'].append({"file_name": file_name, "id": image_id, "width": width, "height": height})
             
             for box, cls in zip(boxes, classes):
-                print(classes)
-                # Use mapping to get correct category ID
-                category_id = model_names_to_custom_ids.get(int(cls), -1)  # Default to -1 if class name not found
+                # Use mapping to get correct category ID based on model prediction name
+                category_id = model_name_to_id[model_names[int(cls)]]
                 if category_id == -1:
-                    print(f'Invalid category ID {cls}')
                     continue  # Skip annotation if class name not found in mapping
+                
                 x1, y1, x2, y2 = [float(b) for b in box]
                 tl_x = x1
                 tl_y = y1

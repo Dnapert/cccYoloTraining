@@ -68,8 +68,10 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
             
             for box, cls in zip(boxes, classes):
                 # Use mapping to get correct category ID based on model prediction name
+                print(f'cls: {cls}, model_name: {model_names[int(cls)]}, model_name_to_id: {model_name_to_id[model_names[int(cls)]]}')
                 category_id = model_name_to_id[model_names[int(cls)]]
                 if category_id == -1:
+                    print('Unable to fetch category')
                     continue  # Skip annotation if class name not found in mapping
                 
                 x1, y1, x2, y2 = [float(b) for b in box]

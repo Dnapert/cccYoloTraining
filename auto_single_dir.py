@@ -89,6 +89,9 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
                     "segmentation": [],
                     "iscrowd": 0,
                 })
+            if move:
+                for image in batch:
+                    os.system(f"mv {image} {output_annotation_dir}")
                 
     print(f"Annotations written to {os.path.join(output_annotation_dir, annotation_name + '.json')}")
     print(f"Annotated {len(data['images'])} images")

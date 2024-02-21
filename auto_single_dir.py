@@ -52,7 +52,7 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
     print(model.names)
     name_to_id = {category['name']: category['id'] for category in custom_categories}
     model_id_to_custom_category_id = {i : name_to_id.get(name, -1) for i, name in enumerate(model.names)}
-    print(f'name_to_id': {name_to_id}')
+    print(f'name_to_id: {name_to_id}')
     print(f'model_id_to_custom_category_id: {model_id_to_custom_category_id}')
     
     for i in range(0, len(image_list), batch_size):

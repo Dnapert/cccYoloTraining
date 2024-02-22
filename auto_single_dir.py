@@ -24,6 +24,8 @@ custom_categories = [
 
 def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home/trashwheel/auto_annotations"):
     model = YOLO(model)
+
+    output_dir += f'/{image_dir.split('/')[2]}'
     
     if not os.path.exists(output_dir):
         print(f"ERROR: {output_dir} not found")
@@ -40,10 +42,10 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
         print(f"ERROR: No valid images found in {image_dir}")
         return
     
-    annotation_name = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
-    output_annotation_dir = os.path.join(output_dir, annotation_name)
-    if move and not os.path.exists(output_annotation_dir):
-        os.makedirs(output_annotation_dir)
+    date = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
+    output_images_dir = os.path.join(output_dir, date)
+    if move and not os.path.exists(output_images_dir):
+        os.makedirs(output_images_dir)
     
     print(f"Found: {len(image_list)} images")
     
@@ -91,11 +93,11 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
                 })
             if move:
                 for image in batch:
-                    os.system(f"mv {image} {output_annotation_dir}")
+                    os.system(f"mv {image} {output_images_dir}")
                 
-    print(f"Annotations written to {os.path.join(output_annotation_dir, annotation_name + '.json')}")
+    print(f"Annotations written to {os.path.join(output_dir, name + '.json')}")
     print(f"Annotated {len(data['images'])} images")
-    with open(os.path.join(output_annotation_dir, annotation_name + '.json'), 'w') as f:
+    with open(os.path.join(output_dir, date + '.json'), 'w') as f:
         json.dump(data, f, indent=4)
 
 if __name__ == "__main__":

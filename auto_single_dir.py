@@ -92,7 +92,7 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
                 for image in batch:
                     os.system(f"mv {image} {output_images_dir}")
                 
-    print(f"Annotations written to {os.path.join(output_dir, name + '.json')}")
+    print(f"Annotations written to {os.path.join(output_dir, date + '.json')}")
     print(f"Annotated {len(data['images'])} images")
     with open(os.path.join(output_dir, date + '.json'), 'w') as f:
         json.dump(data, f, indent=4)

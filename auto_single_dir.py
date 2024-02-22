@@ -25,7 +25,7 @@ custom_categories = [
 def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home/trashwheel/auto_annotations"):
     model = YOLO(model)
 
-    output_dir += f'/{image_dir.split('/')[2]}'
+    output_dir += f'/{image_dir.split("/")[2]}'
     
     if not os.path.exists(output_dir):
         print(f"ERROR: {output_dir} not found")

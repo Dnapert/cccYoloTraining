@@ -27,9 +27,6 @@ def auto_annotate(model, image_dir, batch_size=12, move=False, output_dir="/home
 
     output_dir += f'/{image_dir.split("/")[3]}'
     
-    if not os.path.exists(output_dir):
-        print(f"ERROR: {output_dir} not found")
-        return
     if not os.path.exists(image_dir):
         print(f"ERROR: {image_dir} not found")
         return

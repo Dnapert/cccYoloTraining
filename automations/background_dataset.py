@@ -30,35 +30,30 @@ def auto_annotate(model, image_dir,batch_size=12,move=False,output_image_dir='au
     print(f"Found: {len(image_list)} images")
     data = {'categories':[],'images':[],'annotations':[]}
     names = model.names
-    current_batch = batch_size
-    prev_batch = 0
+
     
     data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
 
     counter = 0
     
-    while current_batch < len(image_list):
-        batch = image_list[prev_batch:current_batch]
+    for i in range(0, len(image_list), batch_size):
+        batch = image_list[i:i+batch_size]
         results = model(batch,verbose=False)
 
         for i,item in enumerate(results):
             image_id = len(data['images'])
             res = item.boxes.cpu().numpy()
-            boxes = res.xywhn
+            boxes = res.xyxy
             h,w = item.orig_shape
             # Only add images with no detections
             
             if len(boxes) == 0:
                 counter += 1
-                sys.stdout.write(f'\r Found {counter} background images')
                 file_name = batch[i].split('/')[-1]
                 if move:
                     os.system(f"mv {batch[i]} {output_image_dir}/{file_name} ")
                 data['images'].append({"file_name":file_name,"id":image_id,"width":w,"height":h})
-                
-    
-        prev_batch = current_batch
-        current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
+            
         
     print(f"Annotations written to annotations/background_{ann_name}.json")
     print(f"Annotated {len(data['images'])} images")

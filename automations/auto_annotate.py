@@ -4,79 +4,110 @@ from ultralytics import YOLO
 import datetime
 import argparse
 
+# Define custom categories
+custom_categories = [
+    {"id": 1, "name": "plastic_bag"},
+    {"id": 2, "name": "plastic_bottle"},
+    {"id": 3, "name": "plastic_cap"},
+    {"id": 4, "name": "plastic_container"},
+    {"id": 5, "name": "plastic_wrapper"},
+    {"id": 6, "name": "plastic_other"},
+    {"id": 7, "name": "foam_container"},
+    {"id": 8, "name": "foam_other"},
+    {"id": 9, "name": "aluminum_can"},
+    {"id": 10, "name": "amazon_envelope"},
+    {"id": 11, "name": "plastic_cup"},
+    {"id": 12, "name": "small_plastic_bottle"},
+    {"id": 13, "name": "glass_bottle"},
+    {"id": 14, "name": "sports_ball"},
+]
+
+
+
 
 def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
-    Automatically annotate images in a directory using a YOLOv8 model. Generates a COCO json annotation file.
-    pass path to trash wheel folder i.e. /home/trashwheel/1
+    Automatically annotate images in all trashwheel bucket folders, saves coco json annotation file with date stamp and moves images to auto annotations folder in bucket.
+
     '''
+    date = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
     model = YOLO(model)
     buckets = [f'/home/trashwheel/{i}' for i in range(1,4)]
-    image_list = []
 
-    for bucket in buckets:
+    for i,bucket in enumerate(buckets):
         subdirs = os.listdir(bucket)
         for subdir in subdirs:
             images = os.listdir(f"{bucket}/{subdir}/images")
-            image_list += [f'{bucket}/{subdir}/images/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
-    print(f"Found: {len(image_list)} images")
-    
-    ann_name = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-") # timestamp for annotation file and directory
-    if not  os.path.exists(f"{output_dir}/{ann_name}"):
-        os.makedirs(f"{output_dir}/{ann_name}")
-    output_dir = f"{output_dir}/{ann_name}"
-    output_annotation_dir = f"{output_dir}/{ann_name}.json"
-    
-    
-    print(f"Found: {len(image_list)} images")
-    data = {'categories':[],'images':[],'annotations':[]}
-    names = model.names
-    current_batch = batch_size
-    prev_batch = 0
-    
-    data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
-    
-    while current_batch < len(image_list):
-        batch = image_list[prev_batch:current_batch]
-        results = model(batch,verbose=False)
-        if move:
-            for image in batch:
-                # move images to output_dir
-                 os.system(f"mv {image} {output_dir}")
-
-        for i,item in enumerate(results):
-            image_id = len(data['images'])
-            res = item.boxes.cpu().numpy()
-            classes = res.cls
-            boxes = res.xyxy
-            height,width = item.orig_shape
-            file_name = batch[i].split('/')[-1]
-            data['images'].append({"file_name":file_name,"id":image_id,"width":width,"height":height})
-       
-            for box,cls in zip(boxes,classes):
-                x1,y1,x2,y2 = [float    (b) for b in box]
-                tl_x = x1
-                tl_y = y1
-                w = x2 - x1
-                h = y2 - y1
-                data['annotations'].append({
-                    "id" : len(data['annotations']),
-                    "image_id":image_id,
-                    "category_id":int(cls),
-                    "bbox":[tl_x,tl_y,w,h],
-                    "file_name":file_name,
-                    "area":w*h,
-                    "segmentation":[],
-                    "iscrowd":0,
-                     })
-   
-        prev_batch = current_batch
-        current_batch += batch_size if current_batch + batch_size < len(image_list) else len(image_list)
+            image_list = [f'{bucket}/{subdir}/images/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
+        print(f"Found: {len(image_list)} images for wheel id: {i}")
         
-    print(f"Annotations written to annotations/{ann_name}.json")
-    print(f"Annotated {len(data['images'])} images")
-    with open(f'{output_annotation_dir}/{ann_name}.json', 'w') as f:
-        json.dump(data, f, indent=4)
+        output_annotation_file = f"{output_dir}/{i}/{date}.json"
+        output_images_dir = f"{output_dir}/{i}/{date}"
+  
+        os.makedirs(output_images_dir, exist_ok=True) # Create output directory if it doesn't exist
+        
+        data = {'categories':[],'images':[],'annotations':[]}
+        names = model.names
+        
+        data['categories'] = [{"id":k,"name":v,"supercategory":"object"} for k,v  in names.items()]
+        
+        # Assign custom categories to data dictionary
+        data = {'categories': custom_categories, 'images': [], 'annotations': []}
+        
+        name_to_id = {category['name']: category['id'] for category in custom_categories}
+        model_id_to_custom_category_id = {i: name_to_id.get(name, -1) for i, name in model.names.items()}
+    
+        for j in range(0, len(image_list), batch_size):
+            batch = image_list[j:j+batch_size]
+            results = model(batch, verbose=False)
+            
+            for k, item in enumerate(results):
+                image_id = len(data['images'])
+                res = item.boxes.cpu().numpy()
+                classes = res.cls
+                boxes = res.xyxy
+                height, width = item.orig_shape
+                file_name = os.path.basename(batch[k])
+                data['images'].append({"file_name": file_name, "id": image_id, "width": width, "height": height})
+                
+                for box, cls in zip(boxes, classes):
+                    # Use mapping to get correct category ID based on model prediction name
+                    category_id = model_id_to_custom_category_id.get(int(cls), -1)
+                    if category_id == -1:
+                        print('Unable to fetch category')
+                        continue  # Skip annotation if class name not found in mapping
+                    
+                    x1, y1, x2, y2 = [float(b) for b in box]
+                    w = x2 - x1
+                    h = y2 - y1
+                    data['annotations'].append({
+                        "id": len(data['annotations']),
+                        "image_id": image_id,
+                        "category_id": category_id,
+                        "bbox": [x1, y1, w, h],
+                        "area": w * h,
+                        "segmentation": [],
+                        "iscrowd": 0,
+                    })
+            if move:
+                for image in batch:
+                    try:
+                        os.system(f"mv {image} {output_images_dir}")
+                    except Exception as e:
+                        print(f"Failed to move {image} to {output_images_dir}")
+                        print(e)    
+                        continue
+                               
+        print(f"Annotated {len(data['images'])} images")
+            
+        try:
+            with open(f'{output_annotation_file}', 'w') as f:
+                json.dump(data, f, indent=4)
+            print(f"Annotations written to {output_annotation_file}")
+        except Exception as e:
+            print(f"Failed to write annotations to {output_annotation_file} with error {e}")
+            continue
+       
 
 parser = argparse.ArgumentParser(description='Auto Annotate')
 parser.add_argument('--model', type=str,default='best.pt', help='path to model')

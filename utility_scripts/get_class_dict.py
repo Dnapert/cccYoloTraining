@@ -21,10 +21,3 @@ def get_class_dict(annotation_file,write:bool)->dict:
         print(f'Class dict written to {annotation_file}')
     return class_dict
 
-argparse = argparse.ArgumentParser()
-
-argparse.add_argument('-a','--annotation_file', type=str, default='annotations/.json')
-argparse.add_argument('-w','--write', type=bool, default=True)
-args = argparse.parse_args()
-if __name__ == '__main__':
-    get_class_dict(args.annotation_file,args.write)

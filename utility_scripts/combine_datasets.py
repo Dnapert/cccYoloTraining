@@ -1,13 +1,9 @@
 
 import json
 import argparse
-from utility_scripts.get_class_dict import get_class_dict
-import json
-import json
 
 
-
-def combine_datasets(annotation_file1, annotation_file2):
+def combine_datasets(annotation_file1, annotation_file2,ann_name):
     '''
     Reads two JSON annotation files and merges them with consistent class IDs and names.
 
@@ -16,9 +12,10 @@ def combine_datasets(annotation_file1, annotation_file2):
  
     with open(annotation_file1, 'r') as f:
         data1 = json.load(f)
+        
     with open(annotation_file2, 'r') as f:
         data2 = json.load(f)
-
+        
     class_dict1 = {category['id']: category['name'] for category in data1['categories']}
     class_dict2 = {category['id']: category['name'] for category in data2['categories']}
 
@@ -37,6 +34,28 @@ def combine_datasets(annotation_file1, annotation_file2):
     data2['annotations'] = update_annotations(data2['annotations'], class_dict2)
 
     new_categories = [{"id": id, "name": name} for name, id in class_to_new_id.items()]
+    
+    # Remap the image ids to be unique across the two datasets
+    maxn = len(data1['images'])
+  
+    data1_id_dict = {data1['images'][i]['id']: i +1 for i in range(maxn)}
+    
+    for i in range(len(data1['images'])):
+        data1['images'][i]['id'] = data1_id_dict[data1['images'][i]['id']]
+    
+    for i in range(len(data1['annotations'])):
+        data1['annotations'][i]['id'] = i
+        data1['annotations'][i]['image_id'] = data1_id_dict[data1['annotations'][i]['image_id']]
+             
+    data2_id_dict = {data2['images'][i]['id']: 1 + i + maxn for i in range(len(data2['images']))}
+    
+    for i in range(len(data2['images'])):
+        data2['images'][i]['id'] = data2_id_dict[data2['images'][i]['id']]
+        
+    for i in range(len(data2['annotations'])):
+        data2['annotations'][i]['id'] = 1 + i + maxn
+        data2['annotations'][i]['image_id'] = data2_id_dict[data2['annotations'][i]['image_id']] 
+             
 
     combined_annotations = data1['annotations'] + data2['annotations']
     combined_images = data1['images'] + data2['images']
@@ -57,24 +76,20 @@ def combine_datasets(annotation_file1, annotation_file2):
             image_dict[i['id']] = i['file_name']
     for a in combined_data['annotations']:
         if not 'file_name' in a:
-            a['file_name'] = image_dict[a['image_id']]
+            a['file_name'] = image_dict[a['image_id']] 
 
-
-    file_name = annotation_file1.split('.', 1)[0] + '_combined.json'
+    if not ann_name:
+        ann_name = annotation_file1.split('.', 1)[0] + '_combined'
+    file_name = ann_name + '.json'
     with open(file_name, 'w') as f:
         json.dump(combined_data, f, indent=4)
 
     print(f"Combined annotations saved to {file_name}")
-    print(get_class_dict(file_name, False))
-
-
-   
-
-argparse = argparse.ArgumentParser()
-argparse.add_argument('--annotation_file1', type=str, default='annotations/original_annotations.json')
-argparse.add_argument('--annotation_file2', type=str, default='11-13.json')
-
-args = argparse.parse_args()
 
 if __name__ == '__main__':
-    combine_datasets(args.annotation_file1,args.annotation_file2)
+    argsParser = argparse.ArgumentParser()
+    argsParser.add_argument('--a1', type=str, default='annotations/original_annotations.json')
+    argsParser.add_argument('--a2', type=str, default='11-13.json')
+    argsParser.add_argument('--ann_name', type=str, default=None)
+    args = argsParser.parse_args()
+    combine_datasets(args.a1,args.a2,args.ann_name)

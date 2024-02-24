@@ -45,9 +45,9 @@ def auto_map(annotation_file,write:bool)->dict:
 
 
 
-argparse = argparse.ArgumentParser()
-argparse.add_argument('-a','--annotation_file', type=str, default='annotations/modified/modified_annotations_updated.json')
-argparse.add_argument('-w','--write', type=bool, default=True)
-args = argparse.parse_args()
+parser = argparse.ArgumentParser()
+parser.add_argument('-a','--annotation_file', type=str, default='annotations/modified/modified_annotations_updated.json')
+parser.add_argument('-w','--write', type=bool, default=True)
+args = parser.parse_args()
 if __name__ == '__main__':
     auto_map(args.annotation_file,args.write)

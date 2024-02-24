@@ -67,17 +67,17 @@ def get_directory(text)->str:
 
 
 def handle_data_split():
-    split_ratio = get_input('Please enter the ratio you would like to split the dataset by test,train,and val: ex. .8,.1,.1 ')
-    test,train,val = split_ratio.split(',')
+    split_ratio = get_input('Please enter the ratio you would like to split the dataset by train, test, and val: ex. 80/10/10 or 75/15/10 ')
+    test,train,val = split_ratio.split('/')
     list_split = [test,train,val]
-    for i in list_split:
-        if not is_float(i):
-            print('You did not enter a valid number!')
-            split_ratio = handle_data_split()
-    
-
+  
+    test,train,val = [int(x) * 0.01 for x in list_split]
+    print(test,train,val)
+    if test + train + val != 1:
+        print('The split ratio does not add up to 100%!')
+        test,train,val = handle_data_split()
     split_seed = get_input('Please enter the seed you would like to use for the split: ')
-    return float(test),float(train),float(val), split_seed
+    return test,train,val, split_seed
 
 def is_float(value):
     try:
@@ -205,9 +205,13 @@ def main():
     class_removal_prompt(new_dataset)
     # Perform augmentation
     augmentation_prompt(new_dataset)
-    # Convert annotations
-    convert_data_prompt(new_dataset)
-    # Split data
+    
+    new_dataset.to_yolo()
+    
+    
+    # # Convert annotations
+    # convert_data_prompt(new_dataset)
+    # # Split data
     split_data_prompt(new_dataset)
     # Train prompt
     train_prompt(new_dataset)

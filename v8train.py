@@ -3,7 +3,7 @@ import argparse
 
 def trainv8(data,epochs):
     model = YOLO('yolov8s.pt')
-    results = model.train(data=data,epochs=epochs,batch=-1)
+    results = model.train(data=data,epochs=epochs,batch=-1,device=0)
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

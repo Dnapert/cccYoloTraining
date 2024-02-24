@@ -60,12 +60,12 @@ def remove_classes_from_annotations(annotations_path, classes_to_remove, output_
     print(f"Annotations saved to {output_file}")
 
 
-argparse = argparse.ArgumentParser()
-argparse.add_argument('--annotations_path',default='annotations/original_annotations.json', type=str, help='Path to annotations file')
-argparse.add_argument('--classes_to_remove',default=[1], nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
-argparse.add_argument('--output_file',default='annotations/testing.json', type=str, help='Path to output file')
+parser = argparse.ArgumentParser()
+parser.add_argument('--annotations_path',default='annotations/original_annotations.json', type=str, help='Path to annotations file')
+parser.add_argument('--classes_to_remove',default=[1], nargs='+',type=int, help='List of classes to remove seperated by space i.e. 0 1 2')
+parser.add_argument('--output_file',default='annotations/testing.json', type=str, help='Path to output file')
 
-args = argparse.parse_args()
+args = parser.parse_args()
 
 if __name__ == '__main__':
     print(args)

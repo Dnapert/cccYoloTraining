@@ -3,7 +3,7 @@ import json
 import numpy as np
 from collections import defaultdict
 import argparse
-from utility_scripts.utils import *
+from utils import *
 
 
 def convert_coco_json(dir=str, annotation_file=str):
@@ -36,7 +36,9 @@ def convert_coco_json(dir=str, annotation_file=str):
             else:
                 counter += 1
                 #sys.stdout.write(f'\r {counter} duplicate images found')
-                
+        for i in range(len(data['images'])):
+            with open((fn / data['images'][i]['file_name']).with_suffix('.txt'), 'w') as file:
+                pass
 
         # Create image-annotations dict
         imgToAnns = defaultdict(list)

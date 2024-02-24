@@ -22,9 +22,6 @@ custom_categories = [
     {"id": 14, "name": "sports_ball"},
 ]
 
-
-
-
 def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/auto_annotations"):
     '''
     Automatically annotate images in all trashwheel bucket folders, saves coco json annotation file with date stamp and moves images to auto annotations folder in bucket.
@@ -33,17 +30,20 @@ def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/au
     date = datetime.datetime.now().strftime("%Y-%m-%d").replace("-0", "-")
     model = YOLO(model)
     buckets = [f'/home/trashwheel/{i}' for i in range(1,4)]
-
-    for i,bucket in enumerate(buckets):
+    
+    for i, bucket in enumerate(buckets):
         subdirs = os.listdir(bucket)
-        for subdir in subdirs:
-            images = os.listdir(f"{bucket}/{subdir}/images")
-            image_list = [f'{bucket}/{subdir}/images/{image}' for image in images if image.split('.')[-1] in ['jpg','jpeg','png']]
-        print(f"Found: {len(image_list)} images for wheel id: {i}")
+        images = []
+        for date_captured in subdirs:
+            images_folder = os.listdir(f"{bucket}/{date_captured}/images")
+            for image in images_folder:
+                if image.split('.')[-1] in ['jpg','jpeg','png']:
+                    images.append(f'{bucket}/{date_captured}/images/{image}')
+        print(f"Found: {len(images)} images for wheel id: {i + 1}")
         
-        output_annotation_file = f"{output_dir}/{i}/{date}.json"
-        output_images_dir = f"{output_dir}/{i}/{date}"
-  
+        output_annotation_file = f"{output_dir}/{i + 1}/{date}.json"
+        output_images_dir = f"{output_dir}/{i + 1}/{date}"
+
         os.makedirs(output_images_dir, exist_ok=True) # Create output directory if it doesn't exist
         
         data = {'categories':[],'images':[],'annotations':[]}
@@ -56,9 +56,9 @@ def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/au
         
         name_to_id = {category['name']: category['id'] for category in custom_categories}
         model_id_to_custom_category_id = {i: name_to_id.get(name, -1) for i, name in model.names.items()}
-    
-        for j in range(0, len(image_list), batch_size):
-            batch = image_list[j:j+batch_size]
+
+        for j in range(0, len(images), batch_size):
+            batch = images[j:j+batch_size]
             results = model(batch, verbose=False)
             
             for k, item in enumerate(results):
@@ -97,7 +97,7 @@ def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/au
                         print(f"Failed to move {image} to {output_images_dir}")
                         print(e)    
                         continue
-                               
+                                
         print(f"Annotated {len(data['images'])} images")
             
         try:
@@ -107,13 +107,12 @@ def auto_annotate(model,batch_size=12,move=False,output_dir="/home/trashwheel/au
         except Exception as e:
             print(f"Failed to write annotations to {output_annotation_file} with error {e}")
             continue
-       
 
 parser = argparse.ArgumentParser(description='Auto Annotate')
-parser.add_argument('--model', type=str,default='best.pt', help='path to model')
-parser.add_argument('--batch_size', type=int, help='batch size')
-parser.add_argument('--move', type=bool, default=False,help='move images to attached bucket')
-parser.add_argument('--output_dir', type=str,default='/home/trashwheel/auto_annotations', help='path to output image directory')
+parser.add_argument('--model', type=str, default='best.pt', help='path to model')
+parser.add_argument('--batch_size', type=int, default=12, help='batch size')
+parser.add_argument('--move', type=bool, default=False, help='move images to attached bucket')
+parser.add_argument('--output_dir', type=str, default='/home/trashwheel/auto_annotations', help='path to output image directory')
 
 
 if __name__ == "__main__":

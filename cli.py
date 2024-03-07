@@ -37,7 +37,6 @@ def load_or_create_project():
         print(images,annotations)
         return DatasetBuilder(project_name=project_name, annotations=annotations, images=images)
       
-			
 def handle_change_config(project_name):
     config_file = f'experiments/{project_name}/config.json'
     with open(config_file, 'r') as f:

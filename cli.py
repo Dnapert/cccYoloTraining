@@ -21,10 +21,15 @@ def load_or_create_project():
 
     if os.path.exists(project_dir):
         print(f'Found a project with the name "{project_name}"!')
-        answer = input("Do you want to load the project? (yes/no): ").lower()
+        answer = get_input("Do you want to load the project? (yes/no): ").lower()
         if answer in ('yes', 'y'):
             config = handle_change_config(project_name)
             return DatasetBuilder(project_name=project_name, annotations=config['annotations'], images=config['images'])
+        elif answer in ('no', 'n'):
+            pass
+        else:
+            print('Invalid Response')
+            return load_or_create_project()
     else:
         print(f'Creating a new project with the name "{project_name}"...')
         images = get_directory('Please enter the path to the directory containing the images you would like to use: ')
